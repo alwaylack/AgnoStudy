@@ -1,0 +1,32 @@
+[
+  {
+    "lesson": 1,
+    "topic": "Agent Basics",
+    "goal": "理解 Agent、模型和 print_response() 的最小调用链路"
+  },
+  {
+    "lesson": 2,
+    "topic": "OpenAI Compatible Model",
+    "goal": "封装兼容 OpenAI 的第三方模型，统一创建 Agent"
+  },
+  {
+    "lesson": 3,
+    "topic": "Learning Basics",
+    "goal": "理解 learning=True、user_id 和 session_id 的基本作用"
+  },
+  {
+    "lesson": 4,
+    "topic": "Tools Basics",
+    "goal": "学会把函数和 Toolkit 注册到 Agent"
+  },
+  {
+    "lesson": 5,
+    "topic": "Structured Output",
+    "goal": "用 output_schema 生成稳定的结构化结果"
+  },
+  {
+    "lesson": 6,
+    "topic": "Knowledge and RAG",
+    "goal": "把本地资料写入 Knowledge，并让 Agent 基于知识库回答问题"
+  }
+]
