@@ -57,16 +57,17 @@
 
 - [examples/27_workflow_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\27_workflow_basics.py:1)
 - [examples/28_workflow_grouped_steps.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\28_workflow_grouped_steps.py:1)
+- [examples/29_workflow_condition_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\29_workflow_condition_basics.py:1)
 
 ## 当前停课点
 
-今天的学习停在：
+当前最新课程：
 
-- [examples/28_workflow_grouped_steps.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\28_workflow_grouped_steps.py:1)
+- [examples/29_workflow_condition_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\29_workflow_condition_basics.py:1)
 
 当前最适合的下一课：
 
-- `Condition / 条件分支 Workflow`
+- `Parallel / 并行 Workflow`
 
 ## 第 27 课和第 28 课在学什么
 
@@ -80,6 +81,12 @@
 
 - 外层 `Workflow` 负责主干流程
 - 内层 `Steps` 负责封装一段可复用的小流程
+
+第 29 课重点是 `Condition`：
+
+- 先做阶段分析
+- 再根据条件判断走不同分支
+- 最后统一汇总成下一课建议
 
 ## 环境变量
 
@@ -123,6 +130,7 @@ uv pip install -U pypdf reportlab
 ```bash
 python examples/27_workflow_basics.py
 python examples/28_workflow_grouped_steps.py
+python examples/29_workflow_condition_basics.py
 ```
 
 如果只想回顾当前阶段的整合骨架：
@@ -140,17 +148,18 @@ python examples/26_real_project_structure_basics.py
 
 ## 下次学习建议
 
-下次建议直接从 `Condition / 条件分支 Workflow` 开始，原因是：
+下次建议直接从 `Parallel / 并行 Workflow` 开始，原因是：
 
 - 你已经掌握了顺序型 Workflow
 - 你已经掌握了 `Steps`
-- 继续学 `Condition` 最适合把 Workflow 从固定顺序推进到分支判断
+- 你已经掌握了 `Condition`
+- 继续学 `Parallel` 最适合把 Workflow 从分支判断推进到并行执行
 
 推荐接下来的学习顺序：
 
-1. `Condition / 条件分支 Workflow`
-2. `Parallel / 并行 Workflow`
-3. `Loop / 循环 Workflow`
+1. `Parallel / 并行 Workflow`
+2. `Loop / 循环 Workflow`
+3. 之后再回头看更复杂的组合模式
 
 参考官方文档：
 
