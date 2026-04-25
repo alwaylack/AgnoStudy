@@ -1,14 +1,14 @@
 # Agno 学习进度记录
 
-更新时间：2026-04-23
+更新时间：2026-04-25
 
 ## 今日停课点
 
-今天的学习已经推进到 `Workflow` 主线的第 3 课。
+今天的学习已经推进到 `Workflow` 主线的第 4 课。
 
 当前最新完成课程：
 
-- [examples/29_workflow_condition_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\29_workflow_condition_basics.py:1)
+- [examples/30_workflow_parallel_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\30_workflow_parallel_basics.py:1)
 
 ## 当前学习阶段
 
@@ -22,6 +22,7 @@
 - 阶段性整合课与真实项目骨架深化课
 - Workflow 基础与 Grouped Steps
 - Workflow 条件分支
+- Workflow 并行执行
 
 ## 已完成课程
 
@@ -71,6 +72,7 @@
 - `27_workflow_basics.py`
 - `28_workflow_grouped_steps.py`
 - `29_workflow_condition_basics.py`
+- `30_workflow_parallel_basics.py`
 
 ## 当前已经掌握的重点
 
@@ -83,6 +85,7 @@
 - 能把项目从“单文件整合示例”继续拆成更接近真实项目的小应用结构。
 - 能用 `Workflow` 组织顺序步骤，并用 `Steps` 封装一段可复用的小流程。
 - 能用 `Condition` 根据前一步结果决定执行不同分支。
+- 能用 `Parallel` 让多个独立步骤同时执行，并在后续步骤中统一汇总结果。
 
 ## 当前项目里的关键封装
 
@@ -115,14 +118,15 @@ uv pip install -U pypdf reportlab
 
 ## 下一课安排
 
-下一课建议继续进入 `Parallel / 并行 Workflow`。
+下一课建议继续进入 `Loop / 循环 Workflow`。
 
 安排理由：
 
 - 你已经学完了最基础的顺序型 Workflow。
 - 你已经学会了如何用 `Steps` 把一段小流程封装起来。
 - 你也已经完成了 `Condition`。
-- 这时候继续学 `Parallel` 最自然，因为它会把 Workflow 从“按条件分支执行”推进到“多支路并行执行”。
+- 你也已经完成了 `Parallel`。
+- 这时候继续学 `Loop` 最自然，因为它会把 Workflow 从“一次性流程”推进到“可重复迭代流程”。
 
 建议下次学习顺序：
 
@@ -136,10 +140,12 @@ uv pip install -U pypdf reportlab
 - [Agno Workflow Patterns](https://docs.agno.com/workflows/workflow-patterns/overview)
 - [Agno Conditional Workflow](https://docs.agno.com/workflows/workflow-patterns/conditional-workflow)
 - [Agno Parallel Workflow](https://docs.agno.com/workflows/workflow-patterns/parallel-workflow)
+- [Agno Loop Workflow](https://docs.agno.com/workflows/workflow-patterns/loop-workflow)
 
 ## 下次开始时建议先看
 
 - [examples/27_workflow_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\27_workflow_basics.py:1)
 - [examples/28_workflow_grouped_steps.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\28_workflow_grouped_steps.py:1)
 - [examples/29_workflow_condition_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\29_workflow_condition_basics.py:1)
+- [examples/30_workflow_parallel_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\30_workflow_parallel_basics.py:1)
 - [README.md](C:\Users\lenovo\Desktop\AgnoStudy\README.md:1)

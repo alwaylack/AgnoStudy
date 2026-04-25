@@ -58,16 +58,17 @@
 - [examples/27_workflow_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\27_workflow_basics.py:1)
 - [examples/28_workflow_grouped_steps.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\28_workflow_grouped_steps.py:1)
 - [examples/29_workflow_condition_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\29_workflow_condition_basics.py:1)
+- [examples/30_workflow_parallel_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\30_workflow_parallel_basics.py:1)
 
 ## 当前停课点
 
 当前最新课程：
 
-- [examples/29_workflow_condition_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\29_workflow_condition_basics.py:1)
+- [examples/30_workflow_parallel_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\30_workflow_parallel_basics.py:1)
 
 当前最适合的下一课：
 
-- `Parallel / 并行 Workflow`
+- `Loop / 循环 Workflow`
 
 ## 第 27 课和第 28 课在学什么
 
@@ -87,6 +88,12 @@
 - 先做阶段分析
 - 再根据条件判断走不同分支
 - 最后统一汇总成下一课建议
+
+第 30 课重点是 `Parallel`：
+
+- 让多个独立步骤同时执行
+- 再把多个分支结果统一汇总
+- 建立“并行采集 -> 汇总结论”的 Workflow 直觉
 
 ## 环境变量
 
@@ -131,6 +138,7 @@ uv pip install -U pypdf reportlab
 python examples/27_workflow_basics.py
 python examples/28_workflow_grouped_steps.py
 python examples/29_workflow_condition_basics.py
+python examples/30_workflow_parallel_basics.py
 ```
 
 如果只想回顾当前阶段的整合骨架：
@@ -148,21 +156,23 @@ python examples/26_real_project_structure_basics.py
 
 ## 下次学习建议
 
-下次建议直接从 `Parallel / 并行 Workflow` 开始，原因是：
+下次建议直接从 `Loop / 循环 Workflow` 开始，原因是：
 
 - 你已经掌握了顺序型 Workflow
 - 你已经掌握了 `Steps`
 - 你已经掌握了 `Condition`
-- 继续学 `Parallel` 最适合把 Workflow 从分支判断推进到并行执行
+- 你已经掌握了 `Parallel`
+- 继续学 `Loop` 最适合把 Workflow 从一次性流程推进到可重复迭代流程
 
 推荐接下来的学习顺序：
 
-1. `Parallel / 并行 Workflow`
-2. `Loop / 循环 Workflow`
-3. 之后再回头看更复杂的组合模式
+1. `Loop / 循环 Workflow`
+2. 之后再回头看更复杂的组合模式
+3. 再进一步尝试 Workflow 与 Team / Knowledge 的组合
 
 参考官方文档：
 
 - [Agno Workflows Overview](https://docs.agno.com/basics/workflows/overview)
 - [Agno Workflow Patterns](https://docs.agno.com/workflows/workflow-patterns/overview)
 - [Agno Conditional Workflow](https://docs.agno.com/workflows/workflow-patterns/conditional-workflow)
+- [Agno Parallel Workflow](https://docs.agno.com/workflows/workflow-patterns/parallel-workflow)
