@@ -59,16 +59,18 @@
 - [examples/28_workflow_grouped_steps.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\28_workflow_grouped_steps.py:1)
 - [examples/29_workflow_condition_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\29_workflow_condition_basics.py:1)
 - [examples/30_workflow_parallel_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\30_workflow_parallel_basics.py:1)
+- [examples/31_workflow_loop_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\31_workflow_loop_basics.py:1)
+- [examples/32_workflow_multi_pattern_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\32_workflow_multi_pattern_basics.py:1)
 
 ## 当前停课点
 
 当前最新课程：
 
-- [examples/30_workflow_parallel_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\30_workflow_parallel_basics.py:1)
+- [examples/32_workflow_multi_pattern_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\32_workflow_multi_pattern_basics.py:1)
 
 当前最适合的下一课：
 
-- `Loop / 循环 Workflow`
+- `Workflow + Team`
 
 ## 第 27 课和第 28 课在学什么
 
@@ -94,6 +96,19 @@
 - 让多个独立步骤同时执行
 - 再把多个分支结果统一汇总
 - 建立“并行采集 -> 汇总结论”的 Workflow 直觉
+
+第 31 课重点是 `Loop`：
+
+- 让同一组步骤重复执行
+- 观察 `max_iterations` 和 `end_condition`
+- 观察 `forward_iteration_output` 如何把上一轮结果带到下一轮
+
+第 32 课重点是多模式组合：
+
+- 先用 `Condition` 做路径判断
+- 再用 `Parallel` 同时做两路分析
+- 再用 `Loop` 把学习计划细化
+- 最后统一汇总成最终建议
 
 ## 环境变量
 
@@ -139,6 +154,8 @@ python examples/27_workflow_basics.py
 python examples/28_workflow_grouped_steps.py
 python examples/29_workflow_condition_basics.py
 python examples/30_workflow_parallel_basics.py
+python examples/31_workflow_loop_basics.py
+python examples/32_workflow_multi_pattern_basics.py
 ```
 
 如果只想回顾当前阶段的整合骨架：
@@ -156,19 +173,21 @@ python examples/26_real_project_structure_basics.py
 
 ## 下次学习建议
 
-下次建议直接从 `Loop / 循环 Workflow` 开始，原因是：
+下次建议进入 `Workflow + Team`，原因是：
 
 - 你已经掌握了顺序型 Workflow
 - 你已经掌握了 `Steps`
 - 你已经掌握了 `Condition`
 - 你已经掌握了 `Parallel`
-- 继续学 `Loop` 最适合把 Workflow 从一次性流程推进到可重复迭代流程
+- 你已经掌握了 `Loop`
+- 你已经完成了第一节多模式组合课
+- 现在更适合把 Workflow 和 Team 结合起来做更接近真实项目的协作编排
 
 推荐接下来的学习顺序：
 
-1. `Loop / 循环 Workflow`
-2. 之后再回头看更复杂的组合模式
-3. 再进一步尝试 Workflow 与 Team / Knowledge 的组合
+1. `Workflow + Team`
+2. `Workflow + Knowledge`
+3. `Workflow + Team + Knowledge`
 
 参考官方文档：
 
@@ -176,3 +195,4 @@ python examples/26_real_project_structure_basics.py
 - [Agno Workflow Patterns](https://docs.agno.com/workflows/workflow-patterns/overview)
 - [Agno Conditional Workflow](https://docs.agno.com/workflows/workflow-patterns/conditional-workflow)
 - [Agno Parallel Workflow](https://docs.agno.com/workflows/workflow-patterns/parallel-workflow)
+- [Agno Loop Workflow](https://docs.agno.com/workflows/workflow-patterns/loop-workflow)
