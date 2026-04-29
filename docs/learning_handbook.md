@@ -58,14 +58,15 @@
 │  ├── 25 应用骨架                                  ⭐⭐⭐⭐       │
 │  └── 26 项目结构                                  ⭐⭐⭐⭐       │
 │                                                                 │
-│  第五阶段：Workflow（27-33）                     ⭐⭐⭐ ~ ⭐⭐⭐⭐⭐│
+│  第五阶段：Workflow（27-34）                     ⭐⭐⭐ ~ ⭐⭐⭐⭐⭐│
 │  ├── 27 基础工作流                                ⭐⭐⭐         │
 │  ├── 28 分组步骤                                  ⭐⭐⭐         │
 │  ├── 29 条件分支                                  ⭐⭐⭐⭐       │
 │  ├── 30 并行执行                                  ⭐⭐⭐⭐       │
 │  ├── 31 循环执行                                  ⭐⭐⭐⭐       │
 │  ├── 32 多模式组合                                ⭐⭐⭐⭐⭐     │
-│  └── 33 Workflow + Team                           ⭐⭐⭐⭐⭐     │
+│  ├── 33 Workflow + Team                           ⭐⭐⭐⭐⭐     │
+│  └── 34 Workflow + Knowledge                      ⭐⭐⭐⭐⭐     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -78,7 +79,7 @@
 - [第二阶段：Knowledge / RAG（10-18）](#第二阶段knowledge--rag10-18)
 - [第三阶段：Team / 多智能体（16-24）](#第三阶段team--多智能体16-24)
 - [第四阶段：集成与项目结构（25-26）](#第四阶段集成与项目结构25-26)
-- [第五阶段：Workflow（27-33）](#第五阶段workflow27-33)
+- [第五阶段：Workflow（27-34）](#第五阶段workflow27-34)
 - [附录](#附录)
 
 ---
@@ -2386,6 +2387,309 @@ def run_workflow_multi_pattern_basics_example() -> None:
 
 ---
 
+## 5.7 Workflow + Team ⭐⭐⭐⭐⭐
+
+**对应示例**：`examples/33_workflow_team_basics.py`
+
+### 学习目标
+
+- 理解 Workflow 和 Team 的集成方式
+- 掌握在 Workflow 中使用 Team 作为步骤
+- 学会构建复杂的协作式工作流
+
+### 核心概念
+
+**Workflow + Team**：将 Team 作为 Workflow 的一个步骤，实现复杂的协作式工作流。Workflow 负责控制整体流程节奏，Team 负责完成其中一个协作分析阶段。
+
+### 代码解析
+
+```python
+from agno.team import Team, TeamMode
+from agno.workflow import Step, Workflow
+from models import OpenAIModel
+
+def build_study_team(model_wrapper: OpenAIModel) -> Team:
+    """构建一个专门用于学习规划的协作团队。"""
+    concept_agent = model_wrapper.create_agent(
+        name="概念讲解成员",
+        role="负责解释当前阶段最重要的概念重点。",
+        instructions=[
+            "请根据用户当前进度，解释当前阶段最需要理解的核心概念。",
+            "输出要清晰、简洁，方便后续步骤继续使用。",
+        ],
+        markdown=True,
+    )
+
+    planning_agent = model_wrapper.create_agent(
+        name="课程规划成员",
+        role="负责给出下一阶段学习安排。",
+        instructions=[
+            "请根据用户当前进度，给出下一阶段最值得优先学习的课程安排。",
+            "输出要说明为什么这样安排。",
+        ],
+        markdown=True,
+    )
+
+    return Team(
+        name="Workflow 学习协作团队",
+        mode=TeamMode.coordinate,
+        model=model_wrapper.get_model(),
+        members=[concept_agent, planning_agent],
+        instructions=[
+            "你是一个学习协作团队。",
+            "请协调不同成员，从概念理解和课程安排两个角度共同完成分析。",
+        ],
+        markdown=True,
+        show_members_responses=True,
+        debug_mode=True,
+    )
+
+def run_workflow_team_basics_example() -> None:
+    """运行 Workflow + Team 入门示例。"""
+    model_wrapper = OpenAIModel.from_env()
+
+    kickoff_agent = model_wrapper.create_agent(
+        name="流程启动员",
+        role="负责识别当前学习请求的背景。",
+        instructions=[
+            "请先简要识别用户当前已经学到什么位置，以及这次请求的目标。",
+            "输出尽量简洁，作为后续团队协作的上下文。",
+        ],
+        markdown=True,
+    )
+
+    summary_agent = model_wrapper.create_agent(
+        name="流程总结员",
+        role="负责整合 Team 的结果，给出最终学习建议。",
+        instructions=[
+            "你会收到前面 Workflow 和 Team 阶段的结果。",
+            "请整合这些信息，给出最终下一课建议，并说明后续主线安排。",
+        ],
+        markdown=True,
+    )
+
+    study_team = build_study_team(model_wrapper)
+
+    workflow = Workflow(
+        name="Agno Workflow + Team 基础课",
+        description="学习如何在 Workflow 中把某个阶段交给 Team 协作完成。",
+        steps=[
+            Step(
+                name="流程启动分析",
+                agent=kickoff_agent,
+                description="先识别当前学习背景和本次请求目标。",
+            ),
+            Step(
+                name="团队协作分析",
+                team=study_team,
+                description="把核心分析阶段交给 Team 协作完成。",
+            ),
+            Step(
+                name="最终流程总结",
+                agent=summary_agent,
+                description="整合 Workflow 和 Team 阶段结果，生成最终建议。",
+            ),
+        ],
+        debug_mode=True,
+    )
+
+    workflow.print_response(
+        input=(
+            "我已经学完了 Workflow 的基础课、Steps、Condition、Parallel、Loop，"
+            "以及多模式组合课。请用 Workflow + Team 的方式帮我安排下一阶段学习。"
+        ),
+        markdown=True,
+        stream=True,
+        show_step_details=True,
+    )
+```
+
+### Workflow + Team 执行流程
+
+```
+输入 → 流程启动分析 → 团队协作分析 → 最终流程总结 → 输出
+                          │
+                          ├─ 概念讲解成员
+                          └─ 课程规划成员
+```
+
+### 关键参数
+
+| 参数 | 说明 |
+|------|------|
+| `team` | 在 Step 中使用 `team` 参数指定 Team 实例 |
+| `agent` | 在 Step 中使用 `agent` 参数指定单个 Agent |
+| `executor` | 在 Step 中使用 `executor` 参数指定函数执行器 |
+
+### Step 类型总结
+
+| 类型 | 参数 | 说明 |
+|------|------|------|
+| Agent Step | `agent` | 单个 Agent 执行 |
+| Team Step | `team` | Team 协作执行 |
+| 函数 Step | `executor` | 函数执行 |
+
+---
+
+## 5.8 Workflow + Knowledge ⭐⭐⭐⭐⭐
+
+**对应示例**：`examples/34_workflow_knowledge_basics.py`
+
+### 学习目标
+
+- 理解 Workflow 和 Knowledge 的集成方式
+- 掌握在 Workflow 步骤中使用知识库检索
+- 学会构建 "编排 + 资料供给" 的工作流模式
+
+### 核心概念
+
+**Workflow + Knowledge**：在 Workflow 的某个阶段显式接入知识库检索，先检索再继续规划。Workflow 负责编排，Knowledge 负责供给资料。
+
+### 代码解析
+
+```python
+from pathlib import Path
+from agno.knowledge.knowledge import Knowledge
+from agno.knowledge.reader.markdown_reader import MarkdownReader
+from agno.vectordb.search import SearchType
+from agno.workflow import Step, Workflow
+from models import OpenAICompatibleEmbedder, OpenAIModel
+
+def build_workflow_knowledge() -> Knowledge:
+    """构建供 Workflow 示例使用的共享知识库。"""
+    try:
+        from agno.vectordb.chroma import ChromaDb
+    except ImportError as exc:
+        raise ImportError(
+            "运行这个示例前，请先安装知识库依赖：`uv pip install -U chromadb`"
+        ) from exc
+
+    project_root = Path(__file__).resolve().parents[1]
+    knowledge_dir = project_root / "knowledge_docs"
+    vector_db_dir = project_root / "tmp" / "chromadb_workflow_knowledge"
+    vector_db_dir.mkdir(parents=True, exist_ok=True)
+
+    documents = [
+        knowledge_dir / "agno_rag_basics.md",
+        knowledge_dir / "agno_tools_notes.md",
+        knowledge_dir / "agno_memory_notes.md",
+    ]
+
+    for document_path in documents:
+        if not document_path.exists():
+            raise FileNotFoundError(f"没有找到知识库文档：{document_path}")
+
+    vector_db = ChromaDb(
+        collection="agno_workflow_knowledge",
+        path=str(vector_db_dir),
+        persistent_client=True,
+        embedder=OpenAICompatibleEmbedder.from_env().get_embedder(),
+        search_type=SearchType.hybrid,
+    )
+
+    knowledge = Knowledge(
+        name="agno_workflow_knowledge",
+        vector_db=vector_db,
+    )
+
+    reader = MarkdownReader(chunk_size=1200)
+    for document_path in documents:
+        knowledge.insert(
+            path=str(document_path),
+            reader=reader,
+            upsert=True,
+        )
+
+    return knowledge
+
+def run_workflow_knowledge_basics_example() -> None:
+    """运行 Workflow + Knowledge 入门示例。"""
+    model_wrapper = OpenAIModel.from_env()
+    knowledge = build_workflow_knowledge()
+
+    retrieval_agent = model_wrapper.create_agent(
+        name="资料检索员",
+        role="负责先从知识库中找到和问题最相关的资料。",
+        knowledge=knowledge,
+        search_knowledge=True,
+        add_knowledge_to_context=True,
+        instructions=[
+            "请先根据用户问题检索知识库。",
+            "输出时优先总结和当前问题最相关的知识点。",
+        ],
+        markdown=True,
+    )
+
+    planning_agent = model_wrapper.create_agent(
+        name="知识规划员",
+        role="负责基于检索结果给出下一阶段学习建议。",
+        knowledge=knowledge,
+        search_knowledge=True,
+        add_knowledge_to_context=True,
+        instructions=[
+            "你会收到前面步骤检索出的关键知识点。",
+            "请基于这些内容给出下一阶段学习建议。",
+            "回答里要同时说明：当前最该理解什么，以及下一课适合学什么。",
+        ],
+        markdown=True,
+    )
+
+    workflow = Workflow(
+        name="Agno Workflow + Knowledge 基础课",
+        description="学习如何让 Workflow 在某个阶段显式使用共享知识库。",
+        steps=[
+            Step(
+                name="知识检索阶段",
+                agent=retrieval_agent,
+                description="先从知识库中检索和当前问题最相关的资料。",
+            ),
+            Step(
+                name="知识规划阶段",
+                agent=planning_agent,
+                description="再基于检索结果生成下一阶段学习建议。",
+            ),
+        ],
+        debug_mode=True,
+    )
+
+    workflow.print_response(
+        input=(
+            "我已经学完了 Workflow 的基础课、Steps、Condition、Parallel、Loop、"
+            "多模式组合课，以及 Workflow + Team。"
+            "请基于知识库先检索当前最相关的学习重点，再给我下一阶段学习建议。"
+        ),
+        markdown=True,
+        stream=True,
+        show_step_details=True,
+    )
+```
+
+### Workflow + Knowledge 执行流程
+
+```
+输入 → 知识检索阶段（Agent + Knowledge）→ 知识规划阶段（Agent + Knowledge）→ 输出
+                        │                            │
+                        └─ 检索知识库                 └─ 基于检索结果规划
+```
+
+### 关键参数
+
+| 参数 | 说明 |
+|------|------|
+| `knowledge` | 在 Agent 中使用 `knowledge` 参数指定知识库 |
+| `search_knowledge` | 是否开启知识库自动检索 |
+| `add_knowledge_to_context` | 是否将检索结果加入上下文 |
+
+### Workflow 集成模式总结
+
+| 模式 | 说明 | 示例 |
+|------|------|------|
+| Workflow + Team | 在 Workflow 中使用 Team 完成协作阶段 | 示例 33 |
+| Workflow + Knowledge | 在 Workflow 中使用 Knowledge 完成资料检索 | 示例 34 |
+| Workflow + Team + Knowledge | 三者结合，构建企业级 AI 应用 | 下一步目标 |
+
+---
+
 # 附录
 
 ## A. 模型层封装
@@ -2482,13 +2786,31 @@ uv pip install -U ddgs chromadb beautifulsoup4 pypdf reportlab
 
 ---
 
-## D. 下一步学习建议
+## D. 当前学习进度与下一步建议
+
+### 已完成课程
+
+| 阶段 | 课程 | 状态 |
+|------|------|------|
+| 第一阶段 | 01-09 Agent 基础 | ✅ 已完成 |
+| 第二阶段 | 10-18 Knowledge / RAG | ✅ 已完成 |
+| 第三阶段 | 16-24 Team / 多智能体 | ✅ 已完成 |
+| 第四阶段 | 25-26 集成与项目结构 | ✅ 已完成 |
+| 第五阶段 | 27-34 Workflow | ✅ 已完成 |
+
+### 下一步学习建议
 
 完成本手册的所有课程后，建议继续学习：
 
-1. **Workflow + Team**：将 Workflow 和 Team 结合，实现更复杂的协作编排
-2. **Workflow + Knowledge**：将 Workflow 和 Knowledge 结合，构建知识驱动的工作流
-3. **Workflow + Team + Knowledge**：综合应用，构建企业级 AI 应用
+1. **Workflow + Team + Knowledge**：将三者结合，构建完整的协作式知识驱动工作流
+2. **真实项目实践**：基于 study_assistant_app 的模式，构建自己的完整应用
+3. **企业级架构**：设计更复杂的多阶段、多模式编排系统
+
+### 推荐学习顺序
+
+1. `Workflow + Team + Knowledge`
+2. 再继续做更接近真实项目的小型工作流
+3. 最后回到更完整的应用骨架整合
 
 ### 参考文档
 

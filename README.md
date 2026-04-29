@@ -62,16 +62,17 @@
 - [examples/31_workflow_loop_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\31_workflow_loop_basics.py:1)
 - [examples/32_workflow_multi_pattern_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\32_workflow_multi_pattern_basics.py:1)
 - [examples/33_workflow_team_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\33_workflow_team_basics.py:1)
+- [examples/34_workflow_knowledge_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\34_workflow_knowledge_basics.py:1)
 
 ## 当前停课点
 
 当前最新课程：
 
-- [examples/33_workflow_team_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\33_workflow_team_basics.py:1)
+- [examples/34_workflow_knowledge_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\34_workflow_knowledge_basics.py:1)
 
 当前最适合的下一课：
 
-- `Workflow + Knowledge`
+- `Workflow + Team + Knowledge`
 
 ## 第 27 课和第 28 课在学什么
 
@@ -116,6 +117,12 @@
 - `Workflow` 负责控制整体流程节奏
 - `Team` 负责完成其中一个协作分析阶段
 - 最后再由 `Workflow` 后续步骤统一汇总结果
+
+第 34 课重点是 `Workflow + Knowledge`：
+
+- 在 Workflow 某个阶段显式接入知识库检索
+- 先检索，再继续规划
+- 建立“Workflow 负责编排，Knowledge 负责供给资料”的直觉
 
 ## 环境变量
 
@@ -164,6 +171,7 @@ python examples/30_workflow_parallel_basics.py
 python examples/31_workflow_loop_basics.py
 python examples/32_workflow_multi_pattern_basics.py
 python examples/33_workflow_team_basics.py
+python examples/34_workflow_knowledge_basics.py
 ```
 
 如果只想回顾当前阶段的整合骨架：
@@ -181,7 +189,7 @@ python examples/26_real_project_structure_basics.py
 
 ## 下次学习建议
 
-下次建议进入 `Workflow + Knowledge`，原因是：
+下次建议进入 `Workflow + Team + Knowledge`，原因是：
 
 - 你已经掌握了顺序型 Workflow
 - 你已经掌握了 `Steps`
@@ -189,13 +197,14 @@ python examples/26_real_project_structure_basics.py
 - 你已经掌握了 `Parallel`
 - 你已经掌握了 `Loop`
 - 你已经完成了 `Workflow + Team`
-- 现在更适合继续学习如何把 Workflow 和 Knowledge 结合起来做检索增强编排
+- 你已经完成了 `Workflow + Knowledge`
+- 现在更适合把 Workflow、Team、Knowledge 三者组合起来做更接近真实项目的编排
 
 推荐接下来的学习顺序：
 
-1. `Workflow + Knowledge`
-2. `Workflow + Team + Knowledge`
-3. 再继续做更接近真实项目的小型工作流
+1. `Workflow + Team + Knowledge`
+2. 再继续做更接近真实项目的小型工作流
+3. 最后回到更完整的应用骨架整合
 
 参考官方文档：
 
