@@ -61,16 +61,17 @@
 - [examples/30_workflow_parallel_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\30_workflow_parallel_basics.py:1)
 - [examples/31_workflow_loop_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\31_workflow_loop_basics.py:1)
 - [examples/32_workflow_multi_pattern_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\32_workflow_multi_pattern_basics.py:1)
+- [examples/33_workflow_team_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\33_workflow_team_basics.py:1)
 
 ## 当前停课点
 
 当前最新课程：
 
-- [examples/32_workflow_multi_pattern_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\32_workflow_multi_pattern_basics.py:1)
+- [examples/33_workflow_team_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\33_workflow_team_basics.py:1)
 
 当前最适合的下一课：
 
-- `Workflow + Team`
+- `Workflow + Knowledge`
 
 ## 第 27 课和第 28 课在学什么
 
@@ -109,6 +110,12 @@
 - 再用 `Parallel` 同时做两路分析
 - 再用 `Loop` 把学习计划细化
 - 最后统一汇总成最终建议
+
+第 33 课重点是 `Workflow + Team`：
+
+- `Workflow` 负责控制整体流程节奏
+- `Team` 负责完成其中一个协作分析阶段
+- 最后再由 `Workflow` 后续步骤统一汇总结果
 
 ## 环境变量
 
@@ -156,6 +163,7 @@ python examples/29_workflow_condition_basics.py
 python examples/30_workflow_parallel_basics.py
 python examples/31_workflow_loop_basics.py
 python examples/32_workflow_multi_pattern_basics.py
+python examples/33_workflow_team_basics.py
 ```
 
 如果只想回顾当前阶段的整合骨架：
@@ -173,21 +181,21 @@ python examples/26_real_project_structure_basics.py
 
 ## 下次学习建议
 
-下次建议进入 `Workflow + Team`，原因是：
+下次建议进入 `Workflow + Knowledge`，原因是：
 
 - 你已经掌握了顺序型 Workflow
 - 你已经掌握了 `Steps`
 - 你已经掌握了 `Condition`
 - 你已经掌握了 `Parallel`
 - 你已经掌握了 `Loop`
-- 你已经完成了第一节多模式组合课
-- 现在更适合把 Workflow 和 Team 结合起来做更接近真实项目的协作编排
+- 你已经完成了 `Workflow + Team`
+- 现在更适合继续学习如何把 Workflow 和 Knowledge 结合起来做检索增强编排
 
 推荐接下来的学习顺序：
 
-1. `Workflow + Team`
-2. `Workflow + Knowledge`
-3. `Workflow + Team + Knowledge`
+1. `Workflow + Knowledge`
+2. `Workflow + Team + Knowledge`
+3. 再继续做更接近真实项目的小型工作流
 
 参考官方文档：
 

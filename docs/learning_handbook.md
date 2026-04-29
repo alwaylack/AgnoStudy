@@ -58,13 +58,14 @@
 │  ├── 25 应用骨架                                  ⭐⭐⭐⭐       │
 │  └── 26 项目结构                                  ⭐⭐⭐⭐       │
 │                                                                 │
-│  第五阶段：Workflow（27-32）                     ⭐⭐⭐ ~ ⭐⭐⭐⭐⭐│
+│  第五阶段：Workflow（27-33）                     ⭐⭐⭐ ~ ⭐⭐⭐⭐⭐│
 │  ├── 27 基础工作流                                ⭐⭐⭐         │
 │  ├── 28 分组步骤                                  ⭐⭐⭐         │
 │  ├── 29 条件分支                                  ⭐⭐⭐⭐       │
 │  ├── 30 并行执行                                  ⭐⭐⭐⭐       │
 │  ├── 31 循环执行                                  ⭐⭐⭐⭐       │
-│  └── 32 多模式组合                                ⭐⭐⭐⭐⭐     │
+│  ├── 32 多模式组合                                ⭐⭐⭐⭐⭐     │
+│  └── 33 Workflow + Team                           ⭐⭐⭐⭐⭐     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -77,7 +78,7 @@
 - [第二阶段：Knowledge / RAG（10-18）](#第二阶段knowledge--rag10-18)
 - [第三阶段：Team / 多智能体（16-24）](#第三阶段team--多智能体16-24)
 - [第四阶段：集成与项目结构（25-26）](#第四阶段集成与项目结构25-26)
-- [第五阶段：Workflow（27-32）](#第五阶段workflow27-32)
+- [第五阶段：Workflow（27-33）](#第五阶段workflow27-33)
 - [附录](#附录)
 
 ---
@@ -725,7 +726,7 @@ def run_knowledge_rag_basics_example() -> None:
             "运行这个示例前，请先安装知识库依赖：`uv pip install -U chromadb`"
         ) from exc
 
-    # 基于当前脚本位置反推项目根目录
+    # 基于当前脚本位置反推项目根目录，避免受执行时工作目录影响。
     project_root = Path(__file__).resolve().parents[1]
     document_path = project_root / "knowledge_docs" / "agno_rag_basics.md"
     vector_db_dir = project_root / "tmp" / "chromadb"
@@ -737,45 +738,45 @@ def run_knowledge_rag_basics_example() -> None:
     model = OpenAIModel.from_env()
     embedder = OpenAICompatibleEmbedder.from_env()
 
-    # 创建 ChromaDB 向量数据库
+    # 这里使用本地持久化 Chroma，适合作为知识库入门示例。
     vector_db = ChromaDb(
-        collection="agno_rag_basics",
+        collection="agno_study_knowledge",
         path=str(vector_db_dir),
         persistent_client=True,
         embedder=embedder.get_embedder(),
-        search_type=SearchType.hybrid,
+        search_type=SearchType.vector,
     )
 
-    # 创建 Knowledge 实例
     knowledge = Knowledge(
-        name="agno_rag_basics_knowledge",
+        name="agno_study_knowledge",
         vector_db=vector_db,
     )
 
-    # 插入文档
-    from agno.knowledge.reader.markdown_reader import MarkdownReader
-    reader = MarkdownReader(chunk_size=1200)
+    # 首次运行时把本地资料写入知识库。
     knowledge.insert(
         path=str(document_path),
-        reader=reader,
         upsert=True,
     )
 
-    # 创建带有知识库的 Agent
     agent = model.create_agent(
-        name="Agno RAG Agent",
+        name="Agno Knowledge Agent",
         knowledge=knowledge,
+        # 让 Agent 在回答问题时自动搜索知识库。
         search_knowledge=True,
-        add_knowledge_to_context=True,
         instructions=[
             "你是 Agno 学习助手。",
-            "请基于知识库中的内容回答问题。",
-            "如果知识库中没有相关内容，请说明。",
+            "请优先根据知识库中的内容回答问题。",
+            "如果知识库中没有答案，再明确说明资料中未提到。",
         ],
         markdown=True,
+        debug_mode=True,
     )
 
-    agent.print_response("请解释一下 Agno 中的 RAG 是什么？")
+    print("\n--- 示例 1：询问 Knowledge 的作用 ---")
+    agent.print_response("Agno 里的 Knowledge 更关注什么？它和 Memory 有什么区别？")
+
+    print("\n--- 示例 2：询问 RAG 的基本流程 ---")
+    agent.print_response("请根据知识库内容总结 Agno 中 RAG 的基本流程。")
 ```
 
 ### RAG 流程
@@ -1081,6 +1082,84 @@ def run_team_route_basics_example() -> None:
 
 **Broadcast**：广播模式，将同一请求同时发送给所有成员，收集并整合所有成员的回答。
 
+### 代码解析
+
+```python
+from agno.team import Team, TeamMode
+from models import OpenAIModel
+
+def run_team_broadcast_basics_example() -> None:
+    """演示如何使用 TeamMode.broadcast 让多个成员同时评估同一个问题。"""
+    model = OpenAIModel.from_env()
+
+    opportunity_agent = model.create_agent(
+        name="机会分析专家",
+        role="负责评估问题中的机会和收益",
+        instructions=[
+            "你专注于分析机会、优势和潜在收益。",
+            "请优先说明这件事值得做的原因。",
+        ],
+        markdown=True,
+    )
+
+    risk_agent = model.create_agent(
+        name="风险分析专家",
+        role="负责评估问题中的风险和潜在问题",
+        instructions=[
+            "你专注于分析风险、限制和潜在问题。",
+            "请优先指出需要小心的地方。",
+        ],
+        markdown=True,
+    )
+
+    action_agent = model.create_agent(
+        name="行动建议专家",
+        role="负责给出可执行的下一步建议",
+        instructions=[
+            "你专注于把问题转化为可执行的建议。",
+            "请优先给出清晰的小步行动方案。",
+        ],
+        markdown=True,
+    )
+
+    # broadcast 模式会把同一个问题同时交给所有成员，
+    # 然后由 Team 统一汇总他们的观点。
+    team = Team(
+        name="Agno 广播协作团队",
+        mode=TeamMode.broadcast,
+        model=model.get_model(),
+        members=[opportunity_agent, risk_agent, action_agent],
+        instructions=[
+            "你是团队协调者。",
+            "请把同一个问题同时交给所有成员分析。",
+            "最后把不同成员的观点汇总成一个清晰的结论。",
+        ],
+        markdown=True,
+        show_members_responses=True,
+        debug_mode=True,
+    )
+
+    team.print_response(
+        "我已经学完 Team 的 coordinate 和 route。现在要不要马上进入 tasks 模式？请从机会、风险和行动建议三个角度一起分析。"
+    )
+```
+
+### Broadcast 模式特点
+
+```
+用户请求 ──┬──→ 成员 A（机会分析）──┐
+           ├──→ 成员 B（风险分析）──┼──→ 团队协调者整合 → 最终回答
+           └──→ 成员 C（行动建议）──┘
+```
+
+### Broadcast vs Coordinate vs Route
+
+| 模式 | 成员数量 | 结果处理 | 适用场景 |
+|------|----------|----------|----------|
+| Coordinate | 多个 | 整合所有结果 | 需要综合多方意见 |
+| Route | 单个 | 直接返回 | 问题明确，只需一个专家 |
+| Broadcast | 所有 | 汇总所有观点 | 需要多角度分析 |
+
 ---
 
 ## 3.4 Tasks 模式 ⭐⭐⭐⭐
@@ -1112,6 +1191,121 @@ def run_team_route_basics_example() -> None:
 ### 核心概念
 
 **Shared Knowledge**：团队成员共享同一知识库，确保信息一致性。
+
+### 代码解析
+
+```python
+from pathlib import Path
+from agno.knowledge.knowledge import Knowledge
+from agno.knowledge.reader.markdown_reader import MarkdownReader
+from agno.team import Team, TeamMode
+from agno.vectordb.search import SearchType
+from models import OpenAICompatibleEmbedder, OpenAIModel
+
+def build_team_knowledge() -> Knowledge:
+    """构建供 Team 共享使用的知识库。"""
+    try:
+        from agno.vectordb.chroma import ChromaDb
+    except ImportError as exc:
+        raise ImportError(
+            "运行这个示例前，请先安装知识库依赖：`uv pip install -U chromadb`"
+        ) from exc
+
+    project_root = Path(__file__).resolve().parents[1]
+    knowledge_dir = project_root / "knowledge_docs"
+    vector_db_dir = project_root / "tmp" / "chromadb_team_shared_knowledge"
+    vector_db_dir.mkdir(parents=True, exist_ok=True)
+
+    documents = [
+        knowledge_dir / "agno_rag_basics.md",
+        knowledge_dir / "agno_beginner_track.md",
+        knowledge_dir / "agno_advanced_track.md",
+    ]
+
+    for document_path in documents:
+        if not document_path.exists():
+            raise FileNotFoundError(f"没有找到知识库文档: {document_path}")
+
+    embedder = OpenAICompatibleEmbedder.from_env()
+
+    vector_db = ChromaDb(
+        collection="agno_team_shared_knowledge",
+        path=str(vector_db_dir),
+        persistent_client=True,
+        embedder=embedder.get_embedder(),
+        search_type=SearchType.hybrid,
+    )
+
+    knowledge = Knowledge(
+        name="agno_team_shared_knowledge",
+        vector_db=vector_db,
+    )
+
+    reader = MarkdownReader(chunk_size=1200)
+    for document_path in documents:
+        knowledge.insert(
+            path=str(document_path),
+            reader=reader,
+            upsert=True,
+        )
+
+    return knowledge
+
+def run_team_shared_knowledge_example() -> None:
+    """演示如何让 Team 共享同一个 Knowledge。"""
+    model = OpenAIModel.from_env()
+    knowledge = build_team_knowledge()
+
+    concept_agent = model.create_agent(
+        name="概念专家",
+        role="负责解释概念和模块关系",
+        instructions=[
+            "你擅长解释 Agno 中不同模块的分工。",
+            "请尽量把概念关系讲清楚。",
+        ],
+        markdown=True,
+    )
+
+    roadmap_agent = model.create_agent(
+        name="路线规划专家",
+        role="负责给出学习顺序和下一步行动建议",
+        instructions=[
+            "你擅长安排学习路线。",
+            "请优先给出清晰的下一步学习安排。",
+        ],
+        markdown=True,
+    )
+
+    # Team 共享同一个 Knowledge，这样多个成员可以围绕同一份资料协作。
+    team = Team(
+        name="Agno 共享知识团队",
+        mode=TeamMode.coordinate,
+        model=model.get_model(),
+        members=[concept_agent, roadmap_agent],
+        knowledge=knowledge,
+        search_knowledge=True,
+        add_knowledge_to_context=True,
+        instructions=[
+            "你是团队协调者。",
+            "请基于共享知识库协调成员回答问题。",
+            "最终答案要同时包含概念解释和下一步学习建议。",
+        ],
+        markdown=True,
+        show_members_responses=True,
+        debug_mode=True,
+    )
+
+    team.print_response(
+        "请基于共享知识库，解释 Knowledge、Memory 和 Team 三者在 Agno 学习路径中的位置，并给我一个下一阶段学习建议。"
+    )
+```
+
+### 共享知识 vs 独立知识
+
+| 方式 | 说明 | 适用场景 |
+|------|------|----------|
+| 共享知识 | 所有成员访问同一知识库 | 需要信息一致性的协作 |
+| 独立知识 | 每个成员有自己的知识库 | 不同领域的专业化分工 |
 
 ---
 
@@ -1505,13 +1699,119 @@ def run_workflow_basics_example() -> None:
 
 **Steps**：步骤组，将多个相关步骤封装为一个可复用的单元，可以在不同的 Workflow 中复用。
 
+### 代码解析
+
+```python
+from agno.workflow import Step, StepOutput, Steps, Workflow
+from models import OpenAIModel
+
+def build_stage_brief(step_input) -> StepOutput:
+    """把阶段分析结果整理成更适合继续规划的简报。"""
+    stage_analysis = step_input.get_step_content("阶段分析") or step_input.previous_step_content or ""
+    brief = (
+        "学习阶段简报：\n"
+        f"{stage_analysis}\n\n"
+        "下面请继续基于这份简报，拆出下一课规划所需的关键点。"
+    )
+    return StepOutput(content=brief, success=True)
+
+def extract_planning_focus(step_input) -> StepOutput:
+    """从阶段简报里提炼下一课规划重点。"""
+    brief = step_input.get_step_content("简报") or step_input.previous_step_content or ""
+    focus = (
+        "下一课规划重点：\n"
+        f"{brief}\n\n"
+        "请优先安排一个既能承接当前阶段、又能自然扩展后续能力的主题。"
+    )
+    return StepOutput(content=focus, success=True)
+
+def run_workflow_grouped_steps_example() -> None:
+    """运行 Grouped Steps 入门示例。"""
+    model_wrapper = OpenAIModel.from_env()
+
+    stage_analyst = model_wrapper.create_agent(
+        name="学习阶段分析员",
+        role="负责判断用户当前处于哪个学习阶段。",
+        instructions=[
+            "请根据用户已经学过的内容判断当前学习阶段。",
+            "输出时请说明当前阶段、已经掌握的重点、下一阶段最值得切入的方向。",
+        ],
+        markdown=True,
+    )
+
+    lesson_planner = model_wrapper.create_agent(
+        name="课程规划员",
+        role="负责根据步骤组整理出的重点安排下一课。",
+        instructions=[
+            "你会收到一个由步骤组整理好的规划重点。",
+            "请基于这些重点给出下一课建议，并说明为什么这样安排。",
+            "输出尽量清晰，适合作为继续学习的课程安排。",
+        ],
+        markdown=True,
+    )
+
+    # 将多个相关步骤封装成一个可复用的 Steps 组
+    planning_steps = Steps(
+        name="下一课规划步骤组",
+        description="把阶段分析结果整理成更适合生成课程建议的中间信息。",
+        steps=[
+            Step(
+                name="阶段简报",
+                executor=build_stage_brief,
+                description="先把阶段分析整理成一份简报。",
+            ),
+            Step(
+                name="规划重点提炼",
+                executor=extract_planning_focus,
+                description="再从简报里提炼下一课规划重点。",
+            ),
+        ],
+    )
+
+    workflow = Workflow(
+        name="Agno Grouped Steps 基础课",
+        description="学习如何把多个顺序步骤封装成一个可复用的步骤组。",
+        steps=[
+            Step(
+                name="阶段分析",
+                agent=stage_analyst,
+                description="先分析当前学习进度所处阶段。",
+            ),
+            planning_steps,
+            Step(
+                name="下一课规划",
+                agent=lesson_planner,
+                description="基于步骤组整理出的重点安排下一课。",
+            ),
+        ],
+        debug_mode=True,
+    )
+
+    workflow.print_response(
+        input=(
+            "我已经完成了 Agent、Tools、Knowledge、Team、整合课、"
+            "真实项目骨架深化课，以及最基础的 Workflow 顺序课。"
+            "请帮我判断我现在的学习阶段，并安排下一课。"
+        ),
+        markdown=True,
+        stream=True,
+        show_step_details=True,
+    )
+```
+
+### Steps vs Step
+
+| 类型 | 说明 | 适用场景 |
+|------|------|----------|
+| Step | 单个步骤 | 简单的顺序执行 |
+| Steps | 步骤组 | 将多个步骤封装为可复用单元 |
+
 ### 执行流程
 
 ```
-输入 → Steps A          → Steps B          → 输出
-         ├─ Step A1         ├─ Step B1
-         ├─ Step A2         ├─ Step B2
-         └─ Step A3         └─ Step B3
+输入 → Step（阶段分析）→ Steps（下一课规划步骤组）→ Step（下一课规划）→ 输出
+                              ├─ Step（阶段简报）
+                              └─ Step（规划重点提炼）
 ```
 
 ---

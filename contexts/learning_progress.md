@@ -1,14 +1,14 @@
 # Agno 学习进度记录
 
-更新时间：2026-04-28
+更新时间：2026-04-29
 
 ## 今日停课点
 
-今天的学习已经推进到 `Workflow` 主线的第 6 课。
+今天的学习已经推进到 `Workflow` 主线的第 7 课。
 
 当前最新完成课程：
 
-- [examples/32_workflow_multi_pattern_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\32_workflow_multi_pattern_basics.py:1)
+- [examples/33_workflow_team_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\33_workflow_team_basics.py:1)
 
 ## 当前学习阶段
 
@@ -25,6 +25,7 @@
 - Workflow 并行执行
 - Workflow 循环执行
 - Workflow 多模式组合
+- Workflow 与 Team 结合
 
 ## 已完成课程
 
@@ -77,6 +78,7 @@
 - `30_workflow_parallel_basics.py`
 - `31_workflow_loop_basics.py`
 - `32_workflow_multi_pattern_basics.py`
+- `33_workflow_team_basics.py`
 
 ## 当前已经掌握的重点
 
@@ -92,6 +94,7 @@
 - 能用 `Parallel` 让多个独立步骤同时执行，并在后续步骤中统一汇总结果。
 - 能用 `Loop` 重复执行同一组步骤，并理解 `max_iterations`、`end_condition`、`forward_iteration_output`。
 - 能把 `Condition + Parallel + Loop` 组合到同一个 Workflow 里。
+- 能把 `Team` 作为 Workflow 的一个步骤阶段来使用。
 
 ## 当前项目里的关键封装
 
@@ -124,7 +127,7 @@ uv pip install -U pypdf reportlab
 
 ## 下一课安排
 
-下一课建议进入 `Workflow + Team`。
+下一课建议进入 `Workflow + Knowledge`。
 
 安排理由：
 
@@ -134,7 +137,8 @@ uv pip install -U pypdf reportlab
 - 你也已经完成了 `Parallel`。
 - 你也已经完成了 `Loop`。
 - 你也已经完成了第一节多模式组合课。
-- 现在最适合继续学习 Workflow 和 Team 的结合方式。
+- 你也已经完成了 `Workflow + Team`。
+- 现在最适合继续学习 Workflow 和 Knowledge 的结合方式。
 
 建议下次学习顺序：
 
@@ -143,6 +147,7 @@ uv pip install -U pypdf reportlab
 3. `Loop / 循环 Workflow`
 4. `Workflow 组合模式`
 5. `Workflow + Team`
+6. `Workflow + Knowledge`
 
 参考方向：
 
@@ -162,4 +167,5 @@ uv pip install -U pypdf reportlab
 - [examples/30_workflow_parallel_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\30_workflow_parallel_basics.py:1)
 - [examples/31_workflow_loop_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\31_workflow_loop_basics.py:1)
 - [examples/32_workflow_multi_pattern_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\32_workflow_multi_pattern_basics.py:1)
+- [examples/33_workflow_team_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\33_workflow_team_basics.py:1)
 - [README.md](C:\Users\lenovo\Desktop\AgnoStudy\README.md:1)
