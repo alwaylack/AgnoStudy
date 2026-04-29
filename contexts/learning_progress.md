@@ -4,11 +4,11 @@
 
 ## 今日停课点
 
-今天的学习已经推进到 `Workflow` 主线的第 9 课。
+今天的学习已经推进到 `Workflow` 主线的第 10 课。
 
 当前最新完成课程：
 
-- [examples/35_workflow_team_knowledge_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\35_workflow_team_knowledge_basics.py:1)
+- [examples/36_learning_assistant_mini_workflow.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\36_learning_assistant_mini_workflow.py:1)
 
 ## 当前学习阶段
 
@@ -28,6 +28,7 @@
 - Workflow 与 Team 结合
 - Workflow 与 Knowledge 结合
 - Workflow 与 Team、Knowledge 结合
+- 更接近真实项目的小型工作流
 
 ## 已完成课程
 
@@ -83,6 +84,7 @@
 - `33_workflow_team_basics.py`
 - `34_workflow_knowledge_basics.py`
 - `35_workflow_team_knowledge_basics.py`
+- `36_learning_assistant_mini_workflow.py`
 
 ## 当前已经掌握的重点
 
@@ -101,6 +103,7 @@
 - 能把 `Team` 作为 Workflow 的一个步骤阶段来使用。
 - 能把 `Knowledge` 作为 Workflow 某个阶段的共享信息源来使用。
 - 能把 `Workflow`、`Team`、`Knowledge` 三者组合到同一个流程里。
+- 能围绕一个更完整的目标组织小型学习助手工作流。
 
 ## 当前项目里的关键封装
 
@@ -133,7 +136,7 @@ uv pip install -U pypdf reportlab
 
 ## 下一课安排
 
-下一课建议进入“更接近真实项目的小型工作流”。
+下一课建议回到更完整的应用骨架整合。
 
 安排理由：
 
@@ -146,7 +149,8 @@ uv pip install -U pypdf reportlab
 - 你也已经完成了 `Workflow + Team`。
 - 你也已经完成了 `Workflow + Knowledge`。
 - 你也已经完成了 `Workflow + Team + Knowledge`。
-- 现在最适合基于这套组合能力，继续做更接近真实项目的小型工作流。
+- 你也已经完成了第一节更接近真实项目的小型工作流。
+- 现在最适合把这些能力重新放回更完整的应用骨架里做一次整合。
 
 建议下次学习顺序：
 
@@ -158,6 +162,7 @@ uv pip install -U pypdf reportlab
 6. `Workflow + Knowledge`
 7. `Workflow + Team + Knowledge`
 8. 更接近真实项目的小型工作流
+9. 回到更完整的应用骨架整合
 
 参考方向：
 
@@ -180,4 +185,5 @@ uv pip install -U pypdf reportlab
 - [examples/33_workflow_team_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\33_workflow_team_basics.py:1)
 - [examples/34_workflow_knowledge_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\34_workflow_knowledge_basics.py:1)
 - [examples/35_workflow_team_knowledge_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\35_workflow_team_knowledge_basics.py:1)
+- [examples/36_learning_assistant_mini_workflow.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\36_learning_assistant_mini_workflow.py:1)
 - [README.md](C:\Users\lenovo\Desktop\AgnoStudy\README.md:1)

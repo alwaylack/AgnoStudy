@@ -58,7 +58,7 @@
 │  ├── 25 应用骨架                                  ⭐⭐⭐⭐       │
 │  └── 26 项目结构                                  ⭐⭐⭐⭐       │
 │                                                                 │
-│  第五阶段：Workflow（27-35）                     ⭐⭐⭐ ~ ⭐⭐⭐⭐⭐│
+│  第五阶段：Workflow（27-36）                     ⭐⭐⭐ ~ ⭐⭐⭐⭐⭐│
 │  ├── 27 基础工作流                                ⭐⭐⭐         │
 │  ├── 28 分组步骤                                  ⭐⭐⭐         │
 │  ├── 29 条件分支                                  ⭐⭐⭐⭐       │
@@ -67,7 +67,8 @@
 │  ├── 32 多模式组合                                ⭐⭐⭐⭐⭐     │
 │  ├── 33 Workflow + Team                           ⭐⭐⭐⭐⭐     │
 │  ├── 34 Workflow + Knowledge                      ⭐⭐⭐⭐⭐     │
-│  └── 35 Workflow + Team + Knowledge               ⭐⭐⭐⭐⭐     │
+│  ├── 35 Workflow + Team + Knowledge               ⭐⭐⭐⭐⭐     │
+│  └── 36 真实项目小型工作流                         ⭐⭐⭐⭐⭐     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -80,7 +81,7 @@
 - [第二阶段：Knowledge / RAG（10-18）](#第二阶段knowledge--rag10-18)
 - [第三阶段：Team / 多智能体（16-24）](#第三阶段team--多智能体16-24)
 - [第四阶段：集成与项目结构（25-26）](#第四阶段集成与项目结构25-26)
-- [第五阶段：Workflow（27-35）](#第五阶段workflow27-35)
+- [第五阶段：Workflow（27-36）](#第五阶段workflow27-36)
 - [附录](#附录)
 
 ---
@@ -2907,6 +2908,217 @@ def run_workflow_team_knowledge_basics_example() -> None:
 
 ---
 
+## 5.10 真实项目小型工作流 ⭐⭐⭐⭐⭐
+
+**对应示例**：`examples/36_learning_assistant_mini_workflow.py`
+
+### 学习目标
+
+- 掌握将 Condition、函数 Step、Team、Knowledge 组合为一个完整工作流
+- 学会使用 `evaluator` 函数做运行时路径判断
+- 学会使用 `executor` 函数做函数式 Step
+- 体验更接近真实项目的多阶段工作流设计
+
+### 核心概念
+
+**真实项目小型工作流**：将前面学到的所有模式（Condition、函数 Step、Team + Knowledge、Custom Tools）组合到一个工作流中，模拟真实项目中的多阶段、多模式编排需求。
+
+### 代码解析
+
+```python
+from pathlib import Path
+from agno.knowledge.knowledge import Knowledge
+from agno.knowledge.reader.markdown_reader import MarkdownReader
+from agno.team import Team, TeamMode
+from agno.vectordb.search import SearchType
+from agno.workflow import Condition, Step, StepOutput, Workflow
+from models import OpenAICompatibleEmbedder, OpenAIModel
+
+# ── 1. 自定义工具函数 ─────────────────────────────────
+
+def estimate_weekly_effort(stage_name: str) -> str:
+    """根据阶段给出建议的每周投入。"""
+    stage = stage_name.lower()
+    if "advanced" in stage or "workflow" in stage:
+        return "建议每周投入 4 到 6 小时，保持连续练习。"
+    if "beginner" in stage:
+        return "建议每周投入 2 到 4 小时，先保证基础跑通。"
+    return "建议每周投入 3 到 5 小时，根据理解速度动态调整。"
+
+def suggest_output_style(goal: str) -> str:
+    """根据目标给出更合适的学习产出形式。"""
+    lowered_goal = goal.lower()
+    if "workflow" in lowered_goal:
+        return "更适合的产出是一个最小可运行工作流示例。"
+    if "knowledge" in lowered_goal:
+        return "更适合的产出是一个带知识库检索的可运行示例。"
+    return "更适合的产出是一个能跑通的最小示例加一份阶段总结。"
+
+# ── 2. Condition evaluator 和 executor ────────────────
+
+def needs_advanced_path(step_input) -> bool:
+    """根据当前输入判断是否进入进阶学习路径。"""
+    user_input = (step_input.input or "").lower()
+    advanced_keywords = ["workflow", "team", "knowledge", "parallel", "loop", "condition"]
+    return any(keyword in user_input for keyword in advanced_keywords)
+
+def build_beginner_path_note(step_input) -> StepOutput:
+    """生成巩固路径说明。"""
+    return StepOutput(
+        content=(
+            "当前进入巩固路径。\n"
+            "建议先回顾已学模式的边界和职责，再逐步进入更完整的小型工作流。"
+        ),
+        success=True,
+    )
+
+def build_advanced_path_note(step_input) -> StepOutput:
+    """生成进阶路径说明。"""
+    return StepOutput(
+        content=(
+            "当前进入进阶路径。\n"
+            "建议开始围绕一个真实学习助手目标，组织完整工作流并产出可执行计划。"
+        ),
+        success=True,
+    )
+
+# ── 3. Team 构建（带自定义工具） ──────────────────────
+
+def build_learning_team(model_wrapper: OpenAIModel, knowledge: Knowledge) -> Team:
+    """构建围绕学习规划协作的知识团队。"""
+    concept_agent = model_wrapper.create_agent(
+        name="学习概念成员",
+        role="负责解释当前阶段最该理解的关键概念。",
+        knowledge=knowledge,
+        search_knowledge=True,
+        add_knowledge_to_context=True,
+        instructions=[
+            "请先基于共享知识库解释当前阶段最重要的概念重点。",
+            "回答时尽量围绕当前阶段最需要理解的内容展开。",
+        ],
+        markdown=True,
+    )
+
+    planning_agent = model_wrapper.create_agent(
+        name="学习规划成员",
+        role="负责制定下一阶段学习安排。",
+        knowledge=knowledge,
+        search_knowledge=True,
+        add_knowledge_to_context=True,
+        tools=[estimate_weekly_effort, suggest_output_style],  # 自定义工具
+        instructions=[
+            "请基于共享知识库制定下一阶段学习安排。",
+            "当问题涉及学习投入或产出形式时，请优先调用工具。",
+        ],
+        markdown=True,
+    )
+
+    return Team(
+        name="学习助手协作团队",
+        mode=TeamMode.coordinate,
+        model=model_wrapper.get_model(),
+        members=[concept_agent, planning_agent],
+        knowledge=knowledge,
+        search_knowledge=True,
+        add_knowledge_to_context=True,
+        add_member_tools_to_context=True,  # 让 Team 看到成员的工具
+        instructions=[
+            "你是一个围绕共享知识库协作的学习助手团队。",
+            "请从概念理解和学习规划两个角度共同完成分析。",
+        ],
+        markdown=True,
+        show_members_responses=True,
+        debug_mode=True,
+    )
+
+# ── 4. 主函数（Workflow 编排） ────────────────────────
+
+def run_learning_assistant_mini_workflow_example() -> None:
+    model_wrapper = OpenAIModel.from_env()
+    knowledge = build_mini_workflow_knowledge()
+
+    intake_agent = model_wrapper.create_agent(
+        name="需求识别员",
+        role="负责识别用户当前进度、目标和问题。",
+        instructions=[...],
+        markdown=True,
+    )
+    summary_agent = model_wrapper.create_agent(
+        name="最终计划汇总员",
+        role="负责把前面各阶段结果整理成一份可执行计划。",
+        instructions=[
+            "你会收到前面多个阶段的结果。",
+            "请整合这些内容，给出一份可执行的下一阶段学习计划。",
+            "最终回答要包含：当前阶段判断、学习重点、每周投入建议、下一课安排、建议产出形式。",
+        ],
+        markdown=True,
+    )
+    study_team = build_learning_team(model_wrapper, knowledge)
+
+    workflow = Workflow(
+        name="Agno 学习助手小型工作流",
+        description="一个更接近真实项目的学习助手最小工作流。",
+        steps=[
+            Step(name="需求识别阶段", agent=intake_agent),
+            Condition(
+                name="学习路径判断",
+                evaluator=needs_advanced_path,
+                steps=[Step(name="进阶路径说明", executor=build_advanced_path_note)],
+                else_steps=[Step(name="巩固路径说明", executor=build_beginner_path_note)],
+            ),
+            Step(name="知识协作规划阶段", team=study_team),
+            Step(name="最终学习计划", agent=summary_agent),
+        ],
+        debug_mode=True,
+    )
+
+    workflow.print_response(
+        input=(
+            "我已经学完了 Workflow 的基础课、Steps、Condition、Parallel、Loop、"
+            "多模式组合课，以及 Workflow + Team、Workflow + Knowledge、Workflow + Team + Knowledge。"
+            "现在我想进入更接近真实项目的小型工作流阶段，请帮我安排下一阶段学习计划。"
+        ),
+        markdown=True, stream=True, show_step_details=True,
+    )
+```
+
+### 执行流程
+
+```
+输入 → 需求识别（Agent）→ 路径判断（Condition）→ 知识协作规划（Team + Knowledge）→ 最终计划（Agent）→ 输出
+                                │                           │
+                           ┌────┴────┐                       ├─ 学习概念成员
+                           │         │                       └─ 学习规划成员（带工具）
+                       进阶路径    巩固路径                         └─ 共享 Knowledge
+                      （函数Step）（函数Step）
+```
+
+### 新模式总结
+
+| 模式 | 说明 | 本示例应用 |
+|------|------|------------|
+| `evaluator` | Condition 的判断函数 | `needs_advanced_path()` 判断是否进入进阶路径 |
+| `executor` | Step 的函数执行器 | `build_advanced_path_note()` / `build_beginner_path_note()` |
+| `tools` | Agent 的自定义工具 | `estimate_weekly_effort()` / `suggest_output_style()` |
+| `add_member_tools_to_context` | 让 Team 看到成员工具 | `True`，便于 Team 协调时知道成员能力 |
+
+### 架构层级
+
+```
+┌───────────────────────────────────────────────────────┐
+│              Workflow（整体编排）                        │
+├───────────────────────────────────────────────────────┤
+│  Step 1    │  Condition       │  Step 3         │  Step 4  │
+│  Agent     │  （路径判断）      │  Team + Know.   │  Agent   │
+│  需求识别  │  ┌─ 进阶路径     │  协作规划        │  最终计划│
+│            │  └─ 巩固路径     │  ├─ 概念成员     │          │
+│            │  （函数 Step）   │  └─ 规划成员     │          │
+│            │                  │     └─ 共享 Know. │          │
+└───────────────────────────────────────────────────────┘
+```
+
+---
+
 # 附录
 
 ## A. 模型层封装
@@ -3013,21 +3225,21 @@ uv pip install -U ddgs chromadb beautifulsoup4 pypdf reportlab
 | 第二阶段 | 10-18 Knowledge / RAG | ✅ 已完成 |
 | 第三阶段 | 16-24 Team / 多智能体 | ✅ 已完成 |
 | 第四阶段 | 25-26 集成与项目结构 | ✅ 已完成 |
-| 第五阶段 | 27-35 Workflow | ✅ 已完成 |
+| 第五阶段 | 27-36 Workflow | ✅ 已完成 |
 
 ### 下一步学习建议
 
 完成本手册的所有课程后，建议继续学习：
 
-1. **更接近真实项目的小型工作流**：基于已有模式，构建更完整的项目工作流
-2. **回到应用骨架整合**：将 Workflow 整合到 study_assistant_app 中
-3. **复杂工作流编排**：设计更多阶段、更多模式的编排系统
+1. **回到应用骨架整合**：将 Workflow 整合到 study_assistant_app 中，形成更完整的项目
+2. **更复杂的工作流编排**：设计更多阶段、更多模式的编排系统
+3. **真实项目实践**：构建自己的完整应用
 
 ### 推荐学习顺序
 
-1. 更接近真实项目的小型工作流
-2. 回到更完整的应用骨架整合
-3. 继续做更复杂的工作流编排
+1. 回到更完整的应用骨架整合
+2. 继续做更复杂的工作流编排
+3. 进入更长链路的真实项目实践
 
 ### 参考文档
 
