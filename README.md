@@ -65,16 +65,17 @@
 - [examples/34_workflow_knowledge_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\34_workflow_knowledge_basics.py:1)
 - [examples/35_workflow_team_knowledge_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\35_workflow_team_knowledge_basics.py:1)
 - [examples/36_learning_assistant_mini_workflow.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\36_learning_assistant_mini_workflow.py:1)
+- [examples/37_study_assistant_workflow_app.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\37_study_assistant_workflow_app.py:1)
 
 ## 当前停课点
 
 当前最新课程：
 
-- [examples/36_learning_assistant_mini_workflow.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\36_learning_assistant_mini_workflow.py:1)
+- [examples/37_study_assistant_workflow_app.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\37_study_assistant_workflow_app.py:1)
 
 当前最适合的下一课：
 
-- `回到更完整的应用骨架整合`
+- `更复杂的工作流编排`
 
 ## 第 27 课和第 28 课在学什么
 
@@ -140,6 +141,12 @@
 - 再让团队基于知识库协作规划
 - 最后输出一份可执行学习计划
 
+第 37 课重点是把工作流接回完整应用骨架：
+
+- 不再只写单独示例
+- 把 Workflow 能力接回 `study_assistant_app`
+- 让项目结构本身开始承载学习助手工作流
+
 ## 环境变量
 
 在项目根目录准备 `.env`：
@@ -190,6 +197,7 @@ python examples/33_workflow_team_basics.py
 python examples/34_workflow_knowledge_basics.py
 python examples/35_workflow_team_knowledge_basics.py
 python examples/36_learning_assistant_mini_workflow.py
+python examples/37_study_assistant_workflow_app.py
 ```
 
 如果只想回顾当前阶段的整合骨架：
@@ -207,7 +215,7 @@ python examples/26_real_project_structure_basics.py
 
 ## 下次学习建议
 
-下次建议回到更完整的应用骨架整合，原因是：
+下次建议进入“更复杂的工作流编排”，原因是：
 
 - 你已经掌握了顺序型 Workflow
 - 你已经掌握了 `Steps`
@@ -218,13 +226,14 @@ python examples/26_real_project_structure_basics.py
 - 你已经完成了 `Workflow + Knowledge`
 - 你已经完成了 `Workflow + Team + Knowledge`
 - 你已经完成了第一节更接近真实项目的小型工作流
-- 现在更适合把这些能力重新放回更完整的应用骨架里做一次整合
+- 你已经完成了把工作流接回应用骨架的整合
+- 现在更适合继续做更复杂的编排，而不是只做基础整合
 
 推荐接下来的学习顺序：
 
-1. 回到更完整的应用骨架整合
-2. 再继续做更复杂的工作流编排
-3. 最后进入更长链路的真实项目实践
+1. 更复杂的工作流编排
+2. 更长链路的真实项目实践
+3. 再继续把应用骨架升级成更完整的小项目
 
 参考官方文档：
 
