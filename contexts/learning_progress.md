@@ -1,15 +1,16 @@
 # Agno 学习进度记录
 
-更新时间：2026-04-30
+更新时间：2026-05-01
 
 ## 今日停课点
 
-今天的学习已经推进到 `Workflow` 主线的第 13 课。
+今天的学习已经推进到 `Workflow` 主线的第 14 课。
 
 当前最新完成课程：
 
 - [examples/38_workflow_router_orchestration.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\38_workflow_router_orchestration.py:1)
 - [examples/39_real_project_workflow_practice.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\39_real_project_workflow_practice.py:1)
+- [examples/40_long_chain_workflow_app.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\40_long_chain_workflow_app.py:1)
 
 ## 当前学习阶段
 
@@ -33,6 +34,7 @@
 - 回到完整应用骨架的工作流整合
 - 更复杂的工作流编排
 - 更长链路的真实项目实践
+- 把长链路 Workflow 回接到应用骨架
 
 ## 已完成课程
 
@@ -92,6 +94,7 @@
 - `37_study_assistant_workflow_app.py`
 - `38_workflow_router_orchestration.py`
 - `39_real_project_workflow_practice.py`
+- `40_long_chain_workflow_app.py`
 
 ## 当前已经掌握的重点
 
@@ -114,6 +117,7 @@
 - 能把工作流能力接回应用骨架，而不是只停留在单独示例文件中。
 - 能用 `Router` 把请求分流到不同子流程中完成更复杂的工作流编排。
 - 能把 `Condition`、`Router`、`Parallel`、`Loop`、`Team`、`Knowledge` 串成一条更长链路的真实项目实践工作流。
+- 能把这条长链路 Workflow 重新接回应用骨架，让应用目录本身承载主链路。
 
 ## 当前项目里的关键封装
 
@@ -146,7 +150,7 @@ uv pip install -U pypdf reportlab
 
 ## 下一课安排
 
-下一课建议进入“把长链路 Workflow 回接到更完整的小应用”。
+下一课建议进入“继续把应用骨架升级成更完整的小项目”。
 
 安排理由：
 
@@ -163,12 +167,13 @@ uv pip install -U pypdf reportlab
 - 你也已经完成了把工作流接回应用骨架的整合。
 - 你也已经完成了第一节 Router 驱动的复杂编排。
 - 你也已经完成了更长链路的真实项目实践课。
-- 现在最适合把这条长链路重新接回更完整的小应用结构里。
+- 你也已经完成了把长链路 Workflow 回接到应用骨架。
+- 现在最适合继续把应用骨架升级成更完整的小项目。
 
 建议下次学习顺序：
 
-1. 把长链路 Workflow 回接到更完整的小应用
-2. 再继续把应用骨架升级成更完整的小项目
+1. 继续把应用骨架升级成更完整的小项目
+2. 再补一层更清晰的模块职责和运行入口
 3. 最后回头做更复杂的工程化整理
 
 参考方向：
@@ -196,3 +201,37 @@ uv pip install -U pypdf reportlab
 - [examples/37_study_assistant_workflow_app.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\37_study_assistant_workflow_app.py:1)
 - [examples/38_workflow_router_orchestration.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\38_workflow_router_orchestration.py:1)
 - [README.md](C:\Users\lenovo\Desktop\AgnoStudy\README.md:1)
+
+## 下一阶段官方主线补课计划
+
+虽然当前项目主线已经把 `Agent / Tools / Knowledge / Team / Workflow` 学得比较深，
+但如果要和 Agno 官方文档当前更强调的主线保持更高一致性，下一阶段建议补这条线：
+
+1. `Session` 深化
+2. `Runtime` 入门
+3. `Storage / Interfaces`
+4. `Scheduling`
+5. 再把 `study_assistant_app` 升级成最小产品雏形
+
+这样安排的原因：
+
+- 你当前已经把 SDK 侧的核心能力学得比较扎实
+- 官方文档现在更强调 `SDK / Runtime / Control Plane` 这三层结构
+- 你当前课程里对 `Runtime`、服务化运行、调度和接口层覆盖还不系统
+- 所以下一阶段最值得补的是“运行态”和“产品化入口”，而不是继续只堆 SDK 组合示例
+
+建议的补课顺序：
+
+1. `Workflow Sessions / Session Management`
+2. `Runtime: Serve as API`
+3. `Runtime: Storage + Interfaces`
+4. `Scheduling`
+5. `study_assistant_app` 最小产品雏形
+
+这条补课计划不会替代你现在的项目主线，而是作为下一阶段的重要对齐方向。
+
+对应官方文档方向：
+
+- [Agno 首页](https://docs.agno.com/)
+- [Agno Sessions Overview](https://docs.agno.com/sessions/overview)
+- [Agno Workflows Overview](https://docs.agno.com/workflows/overview)

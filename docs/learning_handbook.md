@@ -58,7 +58,7 @@
 │  ├── 25 应用骨架                                  ⭐⭐⭐⭐       │
 │  └── 26 项目结构                                  ⭐⭐⭐⭐       │
 │                                                                 │
-│  第五阶段：Workflow（27-39）                     ⭐⭐⭐ ~ ⭐⭐⭐⭐⭐│
+│  第五阶段：Workflow（27-40）                     ⭐⭐⭐ ~ ⭐⭐⭐⭐⭐│
 │  ├── 27 基础工作流                                ⭐⭐⭐         │
 │  ├── 28 分组步骤                                  ⭐⭐⭐         │
 │  ├── 29 条件分支                                  ⭐⭐⭐⭐       │
@@ -71,7 +71,8 @@
 │  ├── 36 真实项目小型工作流                         ⭐⭐⭐⭐⭐     │
 │  ├── 37 应用骨架工作流                             ⭐⭐⭐⭐⭐     │
 │  ├── 38 Router 路由编排                            ⭐⭐⭐⭐⭐     │
-│  └── 39 真实项目长链路实践                         ⭐⭐⭐⭐⭐     │
+│  ├── 39 真实项目长链路实践                         ⭐⭐⭐⭐⭐     │
+│  └── 40 长链路应用骨架                             ⭐⭐⭐⭐⭐     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -84,7 +85,7 @@
 - [第二阶段：Knowledge / RAG（10-18）](#第二阶段knowledge--rag10-18)
 - [第三阶段：Team / 多智能体（16-24）](#第三阶段team--多智能体16-24)
 - [第四阶段：集成与项目结构（25-26）](#第四阶段集成与项目结构25-26)
-- [第五阶段：Workflow（27-39）](#第五阶段workflow27-39)
+- [第五阶段：Workflow（27-40）](#第五阶段workflow27-40)
 - [附录](#附录)
 
 ---
@@ -3410,6 +3411,153 @@ workflow = Workflow(
 
 ---
 
+## 5.14 长链路应用骨架 ⭐⭐⭐⭐⭐
+
+**对应示例**：`examples/40_long_chain_workflow_app.py` + `study_assistant_app/long_chain_workflow_app.py`
+
+### 学习目标
+
+- 掌握把 capstone 长链路 Workflow 接入模块化应用骨架
+- 理解应用目录如何同时承载 Team 应用、简单 Workflow 应用和长链路 Workflow 应用
+- 学会在应用骨架中复用知识库、工具和 Team 组件
+
+### 核心概念
+
+**长链路应用骨架**：将示例 39 的 capstone 长链路工作流从独立示例文件迁移到 `study_assistant_app` 模块中，使应用骨架具备完整的 Workflow + Team + Knowledge 编排能力。应用目录同时承载三种应用模式：Team 应用、简单 Workflow 应用和长链路 Workflow 应用。
+
+### 项目结构变化
+
+```
+study_assistant_app/
+├── __init__.py                   # 导出三个应用函数
+├── app.py                        # Team + Knowledge 应用
+├── knowledge.py                  # 知识库构建（复用）
+├── team.py                       # Team 构建（复用）
+├── tools.py                      # 自定义工具（复用）
+├── workflow_app.py               # 简单 Workflow 应用（Condition + Team）
+└── long_chain_workflow_app.py    # 【新增】长链路 Workflow 应用（Condition + Router + Parallel + Loop + Team）
+```
+
+### `__init__.py` 三函数导出
+
+```python
+from .app import run_study_assistant_app
+from .workflow_app import run_study_assistant_workflow_app
+from .long_chain_workflow_app import run_study_assistant_long_chain_workflow_app
+
+__all__ = [
+    "run_study_assistant_app",
+    "run_study_assistant_workflow_app",
+    "run_study_assistant_long_chain_workflow_app",
+]
+```
+
+### `examples/40_long_chain_workflow_app.py`
+
+```python
+from study_assistant_app import run_study_assistant_long_chain_workflow_app
+
+def run_long_chain_workflow_app_example() -> None:
+    """运行把长链路 Workflow 回接到应用骨架后的课程示例。"""
+    run_study_assistant_long_chain_workflow_app()
+
+if __name__ == "__main__":
+    run_long_chain_workflow_app_example()
+```
+
+### `long_chain_workflow_app.py` 核心代码
+
+```python
+from agno.workflow import Condition, Loop, Parallel, Router, Step, Steps, Workflow
+from models import OpenAIModel
+from .knowledge import build_study_knowledge
+from .tools import estimate_stage_difficulty, suggest_next_lesson
+
+def build_study_assistant_long_chain_workflow_app(model_wrapper=None) -> Workflow:
+    """构建回接到应用骨架中的长链路 Workflow。"""
+    wrapper = model_wrapper or OpenAIModel.from_env()
+    knowledge = build_study_knowledge()  # 复用应用骨架的知识库
+    project_team = _build_project_team(wrapper, knowledge)
+
+    intake_agent = wrapper.create_agent(name="应用长链路需求识别员", ...)
+    workflow_route_agent = wrapper.create_agent(name="应用工作流路线成员", ...)
+    knowledge_route_agent = wrapper.create_agent(
+        name="应用知识路线成员",
+        knowledge=knowledge,  # 复用知识库
+        search_knowledge=True,
+        add_knowledge_to_context=True,
+        ...
+    )
+    gap_agent = wrapper.create_agent(name="应用能力缺口分析员", ...)
+    deliverable_agent = wrapper.create_agent(
+        name="应用交付物分析员",
+        tools=[estimate_stage_difficulty, suggest_next_lesson],  # 复用工具
+        ...
+    )
+    summary_agent = wrapper.create_agent(name="应用长链路汇总员", ...)
+
+    # 子流程定义
+    workflow_route = Steps(name="workflow_route", steps=[Step(..., agent=workflow_route_agent)])
+    knowledge_route = Steps(name="knowledge_route", steps=[Step(..., agent=knowledge_route_agent)])
+    team_route = Steps(name="team_route", steps=[Step(..., team=project_team)])
+
+    return Workflow(
+        name="Agno 学习助手应用级长链路 Workflow",
+        steps=[
+            Step(name="应用长链路需求识别", agent=intake_agent),
+            Condition(name="应用长链路路径判断", evaluator=_should_use_project_path, ...),
+            Router(name="应用学习目标分流", selector=_select_route, choices=[...]),
+            Parallel(
+                Step(name="应用能力缺口并行分析", agent=gap_agent),
+                Step(name="应用交付物并行分析", agent=deliverable_agent),
+            ),
+            Loop(name="应用计划细化循环", steps=[...], max_iterations=3, ...),
+            Step(name="应用最终计划汇总", agent=summary_agent),
+        ],
+        debug_mode=True,
+    )
+```
+
+### 执行流程
+
+```
+输入 → 应用长链路需求识别 → 路径判断（Condition）→ 目标分流（Router）→ 并行分析（Parallel）→ 计划细化（Loop）→ 最终汇总 → 输出
+                                    │                        │                   │                    │
+                               ┌────┴────┐           ┌──────┼──────┐        ┌───┴───┐          ┌─────┼─────┐
+                               │         │           │      │      │        │       │          │     │     │
+                           真实项目   巩固路径   workflow know. team    能力缺口  交付物    第1轮  第2轮  ...
+                           路径     （函数Step） _route _route _route   分析员   分析员   整合   整合
+```
+
+### 三种应用模式对比
+
+| 应用模式 | 模块 | 使用的 Workflow 模式 | 适用场景 |
+|----------|------|----------------------|----------|
+| Team 应用 | `app.py` | 无 Workflow，仅 Team | 简单的团队协作问答 |
+| 简单 Workflow | `workflow_app.py` | Condition + Team | 有条件分支的中等复杂度工作流 |
+| 长链路 Workflow | `long_chain_workflow_app.py` | Condition + Router + Parallel + Loop + Team | 接近真实项目的完整编排 |
+
+### 复用关系
+
+```
+study_assistant_app/
+├── knowledge.py ─────────┐
+├── team.py ──────────────┤
+├── tools.py ─────────────┤
+│                         │
+│  ┌──────────────────────┼──────────────────────┐
+│  │                      │                      │
+│  ▼                      ▼                      ▼
+│  app.py           workflow_app.py    long_chain_workflow_app.py
+│  (build_study_knowledge)  (build_study_knowledge)  (build_study_knowledge)
+│  (build_study_team)       (build_workflow_learning_team) (_build_project_team)
+│                            (estimate_stage_difficulty)   (estimate_stage_difficulty)
+│                            (suggest_next_lesson)         (suggest_next_lesson)
+└──────────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 # 附录
 
 ## A. 模型层封装
@@ -3516,20 +3664,20 @@ uv pip install -U ddgs chromadb beautifulsoup4 pypdf reportlab
 | 第二阶段 | 10-18 Knowledge / RAG | ✅ 已完成 |
 | 第三阶段 | 16-24 Team / 多智能体 | ✅ 已完成 |
 | 第四阶段 | 25-26 集成与项目结构 | ✅ 已完成 |
-| 第五阶段 | 27-39 Workflow | ✅ 已完成 |
+| 第五阶段 | 27-40 Workflow | ✅ 已完成 |
 
 ### 下一步学习建议
 
 完成本手册的所有课程后，建议继续学习：
 
-1. **把长链路 Workflow 回接到更完整的小应用**：将真实项目工作流接入应用骨架
-2. **更完整的应用骨架**：将所有高级编排模式整合到项目结构中
+1. **继续把应用骨架升级成更完整的小项目**：在长链路基础上补全更多业务模块
+2. **补一层更清晰的模块职责和运行入口**：进一步完善应用结构
 3. **工程化整理**：回顾所有模式，整理出可复用的工作流模板
 
 ### 推荐学习顺序
 
-1. 把长链路 Workflow 回接到更完整的小应用
-2. 继续把应用骨架升级成更完整的小项目
+1. 继续把应用骨架升级成更完整的小项目
+2. 再补一层更清晰的模块职责和运行入口
 3. 回头做更复杂的工程化整理
 
 ### 参考文档

@@ -68,6 +68,7 @@
 - [examples/37_study_assistant_workflow_app.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\37_study_assistant_workflow_app.py:1)
 - [examples/38_workflow_router_orchestration.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\38_workflow_router_orchestration.py:1)
 - [examples/39_real_project_workflow_practice.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\39_real_project_workflow_practice.py:1)
+- [examples/40_long_chain_workflow_app.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\40_long_chain_workflow_app.py:1)
 
 ## 当前停课点
 
@@ -75,10 +76,11 @@
 
 - [examples/38_workflow_router_orchestration.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\38_workflow_router_orchestration.py:1)
 - [examples/39_real_project_workflow_practice.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\39_real_project_workflow_practice.py:1)
+- [examples/40_long_chain_workflow_app.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\40_long_chain_workflow_app.py:1)
 
 当前最适合的下一课：
 
-- `把长链路 Workflow 回接到更完整的小应用`
+- `继续把应用骨架升级成更完整的小项目`
 
 ## 第 27 课和第 28 课在学什么
 
@@ -164,6 +166,13 @@
 - 再用 `Loop` 把项目计划逐轮细化
 - 最后统一输出一份更接近真实项目的下一阶段推进计划
 
+第 40 课重点是把长链路 Workflow 回接到应用骨架：
+
+- 不再只写单独示例，而是把长链路流程放回 `study_assistant_app`
+- 让应用目录本身承载 `Condition`、`Router`、`Parallel`、`Loop`
+- 保留 `examples/40_long_chain_workflow_app.py` 作为课程启动入口
+- 为后续继续升级成更完整的小项目打基础
+
 ## 环境变量
 
 在项目根目录准备 `.env`：
@@ -217,6 +226,7 @@ python examples/36_learning_assistant_mini_workflow.py
 python examples/37_study_assistant_workflow_app.py
 python examples/38_workflow_router_orchestration.py
 python examples/39_real_project_workflow_practice.py
+python examples/40_long_chain_workflow_app.py
 ```
 
 如果只想回顾当前阶段的整合骨架：
@@ -234,7 +244,7 @@ python examples/26_real_project_structure_basics.py
 
 ## 下次学习建议
 
-下次建议进入“把长链路 Workflow 回接到更完整的小应用”，原因是：
+下次建议进入“继续把应用骨架升级成更完整的小项目”，原因是：
 
 - 你已经掌握了顺序型 Workflow
 - 你已经掌握了 `Steps`
@@ -248,12 +258,13 @@ python examples/26_real_project_structure_basics.py
 - 你已经完成了把工作流接回应用骨架的整合
 - 你已经完成了第一节 Router 驱动的复杂编排
 - 你已经完成了更长链路的真实项目实践课
-- 现在更适合把这条长链路重新接回更完整的小应用结构里
+- 你已经完成了把长链路 Workflow 回接到应用骨架
+- 现在更适合继续把应用骨架升级成更完整的小项目
 
 推荐接下来的学习顺序：
 
-1. 把长链路 Workflow 回接到更完整的小应用
-2. 再继续把应用骨架升级成更完整的小项目
+1. 继续把应用骨架升级成更完整的小项目
+2. 再补一层更清晰的模块职责和运行入口
 3. 最后回头做更复杂的工程化整理
 
 参考官方文档：
