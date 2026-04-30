@@ -4,11 +4,12 @@
 
 ## 今日停课点
 
-今天的学习已经推进到 `Workflow` 主线的第 12 课。
+今天的学习已经推进到 `Workflow` 主线的第 13 课。
 
 当前最新完成课程：
 
 - [examples/38_workflow_router_orchestration.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\38_workflow_router_orchestration.py:1)
+- [examples/39_real_project_workflow_practice.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\39_real_project_workflow_practice.py:1)
 
 ## 当前学习阶段
 
@@ -31,6 +32,7 @@
 - 更接近真实项目的小型工作流
 - 回到完整应用骨架的工作流整合
 - 更复杂的工作流编排
+- 更长链路的真实项目实践
 
 ## 已完成课程
 
@@ -89,6 +91,7 @@
 - `36_learning_assistant_mini_workflow.py`
 - `37_study_assistant_workflow_app.py`
 - `38_workflow_router_orchestration.py`
+- `39_real_project_workflow_practice.py`
 
 ## 当前已经掌握的重点
 
@@ -110,6 +113,7 @@
 - 能围绕一个更完整的目标组织小型学习助手工作流。
 - 能把工作流能力接回应用骨架，而不是只停留在单独示例文件中。
 - 能用 `Router` 把请求分流到不同子流程中完成更复杂的工作流编排。
+- 能把 `Condition`、`Router`、`Parallel`、`Loop`、`Team`、`Knowledge` 串成一条更长链路的真实项目实践工作流。
 
 ## 当前项目里的关键封装
 
@@ -142,7 +146,7 @@ uv pip install -U pypdf reportlab
 
 ## 下一课安排
 
-下一课建议进入“更长链路的真实项目实践”。
+下一课建议进入“把长链路 Workflow 回接到更完整的小应用”。
 
 安排理由：
 
@@ -158,21 +162,14 @@ uv pip install -U pypdf reportlab
 - 你也已经完成了第一节更接近真实项目的小型工作流。
 - 你也已经完成了把工作流接回应用骨架的整合。
 - 你也已经完成了第一节 Router 驱动的复杂编排。
-- 现在最适合把这些能力放到更长链路的真实项目实践里。
+- 你也已经完成了更长链路的真实项目实践课。
+- 现在最适合把这条长链路重新接回更完整的小应用结构里。
 
 建议下次学习顺序：
 
-1. `Condition / 条件分支 Workflow`
-2. `Parallel / 并行 Workflow`
-3. `Loop / 循环 Workflow`
-4. `Workflow 组合模式`
-5. `Workflow + Team`
-6. `Workflow + Knowledge`
-7. `Workflow + Team + Knowledge`
-8. 更接近真实项目的小型工作流
-9. 回到更完整的应用骨架整合
-10. 更复杂的工作流编排
-11. 更长链路的真实项目实践
+1. 把长链路 Workflow 回接到更完整的小应用
+2. 再继续把应用骨架升级成更完整的小项目
+3. 最后回头做更复杂的工程化整理
 
 参考方向：
 
