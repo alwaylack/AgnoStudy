@@ -4,11 +4,11 @@
 
 ## 今日停课点
 
-今天的学习已经推进到 `Workflow` 主线的第 11 课。
+今天的学习已经推进到 `Workflow` 主线的第 12 课。
 
 当前最新完成课程：
 
-- [examples/37_study_assistant_workflow_app.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\37_study_assistant_workflow_app.py:1)
+- [examples/38_workflow_router_orchestration.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\38_workflow_router_orchestration.py:1)
 
 ## 当前学习阶段
 
@@ -30,6 +30,7 @@
 - Workflow 与 Team、Knowledge 结合
 - 更接近真实项目的小型工作流
 - 回到完整应用骨架的工作流整合
+- 更复杂的工作流编排
 
 ## 已完成课程
 
@@ -87,6 +88,7 @@
 - `35_workflow_team_knowledge_basics.py`
 - `36_learning_assistant_mini_workflow.py`
 - `37_study_assistant_workflow_app.py`
+- `38_workflow_router_orchestration.py`
 
 ## 当前已经掌握的重点
 
@@ -107,6 +109,7 @@
 - 能把 `Workflow`、`Team`、`Knowledge` 三者组合到同一个流程里。
 - 能围绕一个更完整的目标组织小型学习助手工作流。
 - 能把工作流能力接回应用骨架，而不是只停留在单独示例文件中。
+- 能用 `Router` 把请求分流到不同子流程中完成更复杂的工作流编排。
 
 ## 当前项目里的关键封装
 
@@ -139,7 +142,7 @@ uv pip install -U pypdf reportlab
 
 ## 下一课安排
 
-下一课建议进入“更复杂的工作流编排”。
+下一课建议进入“更长链路的真实项目实践”。
 
 安排理由：
 
@@ -154,7 +157,8 @@ uv pip install -U pypdf reportlab
 - 你也已经完成了 `Workflow + Team + Knowledge`。
 - 你也已经完成了第一节更接近真实项目的小型工作流。
 - 你也已经完成了把工作流接回应用骨架的整合。
-- 现在最适合继续做更复杂的工作流编排。
+- 你也已经完成了第一节 Router 驱动的复杂编排。
+- 现在最适合把这些能力放到更长链路的真实项目实践里。
 
 建议下次学习顺序：
 
@@ -168,6 +172,7 @@ uv pip install -U pypdf reportlab
 8. 更接近真实项目的小型工作流
 9. 回到更完整的应用骨架整合
 10. 更复杂的工作流编排
+11. 更长链路的真实项目实践
 
 参考方向：
 
@@ -192,4 +197,5 @@ uv pip install -U pypdf reportlab
 - [examples/35_workflow_team_knowledge_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\35_workflow_team_knowledge_basics.py:1)
 - [examples/36_learning_assistant_mini_workflow.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\36_learning_assistant_mini_workflow.py:1)
 - [examples/37_study_assistant_workflow_app.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\37_study_assistant_workflow_app.py:1)
+- [examples/38_workflow_router_orchestration.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\38_workflow_router_orchestration.py:1)
 - [README.md](C:\Users\lenovo\Desktop\AgnoStudy\README.md:1)
