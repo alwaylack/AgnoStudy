@@ -58,7 +58,7 @@
 │  ├── 25 应用骨架                                  ⭐⭐⭐⭐       │
 │  └── 26 项目结构                                  ⭐⭐⭐⭐       │
 │                                                                 │
-│  第五阶段：Workflow（27-36）                     ⭐⭐⭐ ~ ⭐⭐⭐⭐⭐│
+│  第五阶段：Workflow（27-38）                     ⭐⭐⭐ ~ ⭐⭐⭐⭐⭐│
 │  ├── 27 基础工作流                                ⭐⭐⭐         │
 │  ├── 28 分组步骤                                  ⭐⭐⭐         │
 │  ├── 29 条件分支                                  ⭐⭐⭐⭐       │
@@ -68,7 +68,9 @@
 │  ├── 33 Workflow + Team                           ⭐⭐⭐⭐⭐     │
 │  ├── 34 Workflow + Knowledge                      ⭐⭐⭐⭐⭐     │
 │  ├── 35 Workflow + Team + Knowledge               ⭐⭐⭐⭐⭐     │
-│  └── 36 真实项目小型工作流                         ⭐⭐⭐⭐⭐     │
+│  ├── 36 真实项目小型工作流                         ⭐⭐⭐⭐⭐     │
+│  ├── 37 应用骨架工作流                             ⭐⭐⭐⭐⭐     │
+│  └── 38 Router 路由编排                            ⭐⭐⭐⭐⭐     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -81,7 +83,7 @@
 - [第二阶段：Knowledge / RAG（10-18）](#第二阶段knowledge--rag10-18)
 - [第三阶段：Team / 多智能体（16-24）](#第三阶段team--多智能体16-24)
 - [第四阶段：集成与项目结构（25-26）](#第四阶段集成与项目结构25-26)
-- [第五阶段：Workflow（27-36）](#第五阶段workflow27-36)
+- [第五阶段：Workflow（27-38）](#第五阶段workflow27-38)
 - [附录](#附录)
 
 ---
@@ -3119,6 +3121,209 @@ def run_learning_assistant_mini_workflow_example() -> None:
 
 ---
 
+## 5.11 应用骨架工作流 ⭐⭐⭐⭐⭐
+
+**对应示例**：`examples/37_study_assistant_workflow_app.py` + `study_assistant_app/workflow_app.py`
+
+### 学习目标
+
+- 掌握把 Workflow 能力接回模块化应用骨架
+- 理解 Workflow 如何与已有项目结构集成
+- 学会从应用骨架内部构建和运行 Workflow
+
+### 核心概念
+
+**应用骨架工作流**：不再写独立的示例文件，而是把 Workflow 能力接入 `study_assistant_app` 的模块化结构中。`workflow_app.py` 是新增的应用模块，负责构建完整的工作流并对外暴露 `run_study_assistant_workflow_app()` 函数。
+
+### 项目结构变化
+
+```
+study_assistant_app/
+├── __init__.py            # 新增导出 run_study_assistant_workflow_app
+├── app.py                 # Team + Knowledge 应用
+├── knowledge.py           # 知识库构建
+├── team.py                # Team 构建
+├── tools.py               # 自定义工具（estimate_stage_difficulty, suggest_next_lesson）
+└── workflow_app.py        # 【新增】Workflow 应用模块
+```
+
+### `examples/37_study_assistant_workflow_app.py`
+
+```python
+from study_assistant_app import run_study_assistant_workflow_app
+
+def run_study_assistant_workflow_app_example() -> None:
+    """运行接回应用骨架后的学习助手工作流示例。"""
+    run_study_assistant_workflow_app()
+
+if __name__ == "__main__":
+    run_study_assistant_workflow_app_example()
+```
+
+### `study_assistant_app/workflow_app.py` 核心代码
+
+```python
+from agno.workflow import Condition, Step, Workflow
+from models import OpenAIModel
+from .knowledge import build_study_knowledge
+from .tools import estimate_stage_difficulty, suggest_next_lesson
+
+def build_study_assistant_workflow_app(model_wrapper=None) -> Workflow:
+    """构建接入应用骨架的学习助手工作流。"""
+    wrapper = model_wrapper or OpenAIModel.from_env()
+    knowledge = build_study_knowledge()
+    study_team = build_workflow_learning_team(wrapper, knowledge)
+
+    intake_agent = wrapper.create_agent(name="应用需求识别员", ...)
+    summary_agent = wrapper.create_agent(name="应用计划汇总员", ...)
+
+    return Workflow(
+        name="Agno 学习助手应用骨架工作流",
+        steps=[
+            Step(name="应用需求识别", agent=intake_agent),
+            Condition(
+                name="应用路径判断",
+                evaluator=_needs_advanced_path,
+                steps=[Step(name="进阶路径提示", executor=_build_advanced_note)],
+                else_steps=[Step(name="巩固路径提示", executor=_build_beginner_note)],
+            ),
+            Step(name="应用骨架协作规划", team=study_team),
+            Step(name="应用最终建议", agent=summary_agent),
+        ],
+        debug_mode=True,
+    )
+
+def run_study_assistant_workflow_app() -> None:
+    """运行接入应用骨架后的学习助手工作流。"""
+    workflow = build_study_assistant_workflow_app()
+    workflow.print_response(input="...", markdown=True, stream=True, show_step_details=True)
+```
+
+### 执行流程
+
+```
+输入 → 应用需求识别（Agent）→ 路径判断（Condition）→ 应用骨架协作规划（Team + Knowledge）→ 应用最终建议（Agent）→ 输出
+                                   │                           │
+                              ┌────┴────┐                       ├─ 应用概念成员
+                              │         │                       └─ 应用规划成员（带工具）
+                          进阶路径    巩固路径                         └─ 共享 Knowledge
+                         （函数Step）（函数Step）
+```
+
+### 关键设计
+
+| 设计点 | 说明 |
+|--------|------|
+| 模块化 | Workflow 逻辑封装在 `workflow_app.py` 中，与 `app.py`（Team 应用）并行 |
+| 复用 | 知识库通过 `build_study_knowledge()` 复用，自定义工具通过 `tools.py` 复用 |
+| 对外接口 | `__init__.py` 同时导出 `run_study_assistant_app` 和 `run_study_assistant_workflow_app` |
+| 轻量入口 | `examples/37_*.py` 只做调用，不包含业务逻辑 |
+
+---
+
+## 5.12 Router 路由编排 ⭐⭐⭐⭐⭐
+
+**对应示例**：`examples/38_workflow_router_orchestration.py`
+
+### 学习目标
+
+- 掌握 `Router` 的使用，按目标把请求分流到不同子流程
+- 学会用 `Steps` 封装子流程，并通过 `choices` 注册到 Router
+- 理解 "背景识别 → 路由分流 → 子流程执行 → 统一汇总" 的完整编排模式
+
+### 核心概念
+
+**Router 路由编排**：`Router` 是 Workflow 中的分流组件。它通过 `selector` 函数分析用户输入，返回子流程名称，然后把请求分发到对应的 `Steps` 子流程中执行。最终由后续步骤统一汇总结果。
+
+### 代码解析
+
+```python
+from agno.workflow import Router, Step, Steps, Workflow
+
+# ── 1. selector 函数（路由判断） ─────────────────────
+
+def select_learning_route(step_input) -> str:
+    """根据用户目标选择最合适的子流程。"""
+    user_input = (step_input.input or "").lower()
+    if "knowledge" in user_input or "rag" in user_input or "检索" in user_input:
+        return "knowledge_route"
+    if "team" in user_input or "协作" in user_input:
+        return "team_route"
+    return "workflow_route"
+
+# ── 2. 子流程定义（Steps） ───────────────────────────
+
+workflow_route = Steps(
+    name="workflow_route",
+    description="偏 Workflow 实现路线的子流程。",
+    steps=[
+        Step(name="工作流路线分析", agent=workflow_focus_agent),
+    ],
+)
+
+knowledge_route = Steps(
+    name="knowledge_route",
+    description="偏 Knowledge / RAG 路线的子流程。",
+    steps=[
+        Step(name="知识路线分析", agent=knowledge_focus_agent),
+    ],
+)
+
+team_route = Steps(
+    name="team_route",
+    description="偏 Team 协作路线的子流程。",
+    steps=[
+        Step(name="团队路线分析", team=learning_team),
+    ],
+)
+
+# ── 3. Workflow 组装（Router + choices） ──────────────
+
+workflow = Workflow(
+    name="Agno Router 编排进阶课",
+    steps=[
+        Step(name="路由背景识别", agent=intake_agent),
+        Router(
+            name="学习路线分流器",
+            selector=select_learning_route,
+            choices=[workflow_route, knowledge_route, team_route],
+        ),
+        Step(name="最终路由汇总", agent=summary_agent),
+    ],
+    debug_mode=True,
+)
+```
+
+### 执行流程
+
+```
+输入 → 路由背景识别（Agent）→ Router 分流器 → 子流程执行（Steps）→ 最终路由汇总（Agent）→ 输出
+                                    │
+                           ┌────────┼────────┐
+                           │        │        │
+                       workflow  knowledge  team
+                       _route    _route    _route
+                       （Agent）（Agent）（Team）
+```
+
+### Router 参数说明
+
+| 参数 | 说明 |
+|------|------|
+| `selector` | 路由判断函数，接收 `step_input`，返回子流程 `name` |
+| `choices` | 可选子流程列表，每个元素是一个 `Steps` 实例 |
+
+### Condition vs Router 对比
+
+| 特性 | Condition | Router |
+|------|-----------|--------|
+| 分支数 | 2 个（if / else） | N 个（多个 choices） |
+| 判断方式 | `evaluator` 返回 bool | `selector` 返回 string |
+| 子流程 | `steps` / `else_steps` | `choices` 列表 |
+| 适用场景 | 二元判断（进阶/巩固） | 多路分流（多种路线） |
+
+---
+
 # 附录
 
 ## A. 模型层封装
@@ -3225,21 +3430,21 @@ uv pip install -U ddgs chromadb beautifulsoup4 pypdf reportlab
 | 第二阶段 | 10-18 Knowledge / RAG | ✅ 已完成 |
 | 第三阶段 | 16-24 Team / 多智能体 | ✅ 已完成 |
 | 第四阶段 | 25-26 集成与项目结构 | ✅ 已完成 |
-| 第五阶段 | 27-36 Workflow | ✅ 已完成 |
+| 第五阶段 | 27-38 Workflow | ✅ 已完成 |
 
 ### 下一步学习建议
 
 完成本手册的所有课程后，建议继续学习：
 
-1. **回到应用骨架整合**：将 Workflow 整合到 study_assistant_app 中，形成更完整的项目
-2. **更复杂的工作流编排**：设计更多阶段、更多模式的编排系统
-3. **真实项目实践**：构建自己的完整应用
+1. **更长链路的真实项目实践**：基于已有模式，构建更完整的长链路项目工作流
+2. **更完整的应用骨架**：将 Router 编排等高级模式接入应用骨架
+3. **工程化整理**：回顾所有模式，整理出可复用的工作流模板
 
 ### 推荐学习顺序
 
-1. 回到更完整的应用骨架整合
-2. 继续做更复杂的工作流编排
-3. 进入更长链路的真实项目实践
+1. 更长链路的真实项目实践
+2. 继续把应用骨架升级成更完整的小项目
+3. 回头做更复杂的工程化整理
 
 ### 参考文档
 
