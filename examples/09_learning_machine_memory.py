@@ -9,7 +9,8 @@ from models import OpenAIModel
 def run_learning_machine_memory_example() -> None:
     """演示如何使用 LearningMachine 精细配置学习能力。"""
     # LearningMachine 同样需要数据库保存学习结果，这里继续使用 SQLite。
-    db_path = Path("tmp/learning_machine.db")
+    # db_path = Path("tmp/learning_machine.db")
+    db_path = Path(__file__).resolve().parents[1] / "tmp" / "learning_machine.db"
     db_path.parent.mkdir(parents=True, exist_ok=True)
     db = SqliteDb(db_file=str(db_path))
 

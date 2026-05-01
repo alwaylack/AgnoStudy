@@ -8,7 +8,8 @@ from models import OpenAIModel
 def run_sessions_history_example() -> None:
     """演示如何用 Session 和 History 实现多轮对话。"""
     # History 依赖数据库来保存消息记录，这里继续使用最轻量的 SQLite。
-    db_path = Path("tmp/sessions.db")
+    # db_path = Path("tmp/sessions.db")
+    db_path = Path(__file__).resolve().parents[1] / "tmp" / "sessions.db"
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
     model = OpenAIModel.from_env()
