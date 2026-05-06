@@ -69,6 +69,7 @@
 - [examples/38_workflow_router_orchestration.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\38_workflow_router_orchestration.py:1)
 - [examples/39_real_project_workflow_practice.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\39_real_project_workflow_practice.py:1)
 - [examples/40_long_chain_workflow_app.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\40_long_chain_workflow_app.py:1)
+- [examples/41_workflow_sessions_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\41_workflow_sessions_basics.py:1)
 
 ## 当前停课点
 
@@ -80,7 +81,7 @@
 
 当前最适合的下一课：
 
-- `继续把应用骨架升级成更完整的小项目`
+- `Runtime / Sessions 官方主线补课`
 
 ## 第 27 课和第 28 课在学什么
 
@@ -173,6 +174,14 @@
 - 保留 `examples/40_long_chain_workflow_app.py` 作为课程启动入口
 - 为后续继续升级成更完整的小项目打基础
 
+第 41 课重点是 Workflow Sessions：
+
+- 给 `Workflow` 接上 `SqliteDb`
+- 开启 `add_workflow_history_to_steps=True`
+- 用 `session_id` 复用同一个 Workflow 会话
+- 用 `session_state` 在多次运行之间共享状态
+- 为后续 Runtime / API / Scheduling 主线打基础
+
 ## 环境变量
 
 在项目根目录准备 `.env`：
@@ -227,6 +236,7 @@ python examples/37_study_assistant_workflow_app.py
 python examples/38_workflow_router_orchestration.py
 python examples/39_real_project_workflow_practice.py
 python examples/40_long_chain_workflow_app.py
+python examples/41_workflow_sessions_basics.py
 ```
 
 如果只想回顾当前阶段的整合骨架：
@@ -244,7 +254,7 @@ python examples/26_real_project_structure_basics.py
 
 ## 下次学习建议
 
-下次建议进入“继续把应用骨架升级成更完整的小项目”，原因是：
+下次建议进入“Runtime / Sessions 官方主线补课”，原因是：
 
 - 你已经掌握了顺序型 Workflow
 - 你已经掌握了 `Steps`
@@ -259,13 +269,16 @@ python examples/26_real_project_structure_basics.py
 - 你已经完成了第一节 Router 驱动的复杂编排
 - 你已经完成了更长链路的真实项目实践课
 - 你已经完成了把长链路 Workflow 回接到应用骨架
-- 现在更适合继续把应用骨架升级成更完整的小项目
+- 你已经开始补 Workflow Sessions
+- 现在更适合沿官方主线继续补 Runtime / API / Scheduling
 
 推荐接下来的学习顺序：
 
-1. 继续把应用骨架升级成更完整的小项目
-2. 再补一层更清晰的模块职责和运行入口
-3. 最后回头做更复杂的工程化整理
+1. Runtime / Sessions 主线补课
+2. Runtime: Serve as API
+3. Runtime: Storage + Interfaces
+4. Scheduling
+5. 最后再回到更完整的小项目升级
 
 参考官方文档：
 

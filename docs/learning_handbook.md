@@ -58,7 +58,7 @@
 │  ├── 25 应用骨架                                  ⭐⭐⭐⭐       │
 │  └── 26 项目结构                                  ⭐⭐⭐⭐       │
 │                                                                 │
-│  第五阶段：Workflow（27-40）                     ⭐⭐⭐ ~ ⭐⭐⭐⭐⭐│
+│  第五阶段：Workflow（27-41）                     ⭐⭐⭐ ~ ⭐⭐⭐⭐⭐│
 │  ├── 27 基础工作流                                ⭐⭐⭐         │
 │  ├── 28 分组步骤                                  ⭐⭐⭐         │
 │  ├── 29 条件分支                                  ⭐⭐⭐⭐       │
@@ -72,7 +72,8 @@
 │  ├── 37 应用骨架工作流                             ⭐⭐⭐⭐⭐     │
 │  ├── 38 Router 路由编排                            ⭐⭐⭐⭐⭐     │
 │  ├── 39 真实项目长链路实践                         ⭐⭐⭐⭐⭐     │
-│  └── 40 长链路应用骨架                             ⭐⭐⭐⭐⭐     │
+│  ├── 40 长链路应用骨架                             ⭐⭐⭐⭐⭐     │
+│  └── 41 Workflow Sessions                         ⭐⭐⭐⭐       │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -85,7 +86,7 @@
 - [第二阶段：Knowledge / RAG（10-18）](#第二阶段knowledge--rag10-18)
 - [第三阶段：Team / 多智能体（16-24）](#第三阶段team--多智能体16-24)
 - [第四阶段：集成与项目结构（25-26）](#第四阶段集成与项目结构25-26)
-- [第五阶段：Workflow（27-40）](#第五阶段workflow27-40)
+- [第五阶段：Workflow（27-41）](#第五阶段workflow27-41)
 - [附录](#附录)
 
 ---
@@ -3558,6 +3559,154 @@ study_assistant_app/
 
 ---
 
+## 5.15 Workflow Sessions ⭐⭐⭐⭐
+
+**对应示例**：`examples/41_workflow_sessions_basics.py`
+
+### 学习目标
+
+- 掌握 Workflow 的持久化存储（SqliteDb）
+- 理解 `session_state` 跨运行共享状态机制
+- 学会使用 `session_id` 复用同一个 Workflow 会话
+- 理解 `add_workflow_history_to_steps` 如何将历史结果注入步骤
+
+### 核心概念
+
+**Workflow Sessions**：在无状态的 Workflow 基础上，通过 `SqliteDb` 实现持久化存储，配合 `session_state` 实现跨多次运行的状态共享，配合 `session_id` 实现会话复用。这是 Workflow 从"一次性执行"走向"可连续使用"的关键一步。
+
+### 关键参数
+
+| 参数 | 说明 |
+|------|------|
+| `db=SqliteDb(db_file=...)` | 持久化存储，保存运行历史和 session 状态 |
+| `session_state={...}` | 初始共享状态（字典），跨多次运行共享 |
+| `add_workflow_history_to_steps=True` | 自动将历史运行结果注入步骤输入 |
+| `num_history_runs=3` | 注入最近几次运行的历史 |
+| `session_id="xxx"` | 复用同一个会话 |
+| `user_id="xxx"` | 用户标识 |
+
+### 核心代码
+
+```python
+from agno.db.sqlite import SqliteDb
+from agno.run import RunContext
+from agno.workflow import Step, StepInput, StepOutput, Workflow
+
+def update_study_session_state(step_input: StepInput, run_context: RunContext) -> StepOutput:
+    """把当前输入里的学习进度写入 Workflow session_state。"""
+    if not run_context.session_state:
+        run_context.session_state = {}
+    run_context.session_state.setdefault("completed_topics", [])
+    run_context.session_state.setdefault("current_goal", "")
+    run_context.session_state.setdefault("notes", [])
+    # ... 更新状态 ...
+    return StepOutput(content=..., success=True)
+
+def inspect_study_session_state(step_input: StepInput, run_context: RunContext) -> StepOutput:
+    """读取当前 Workflow session_state。"""
+    session_state = run_context.session_state or {}
+    # ... 读取状态 ...
+    return StepOutput(content=..., success=True)
+
+workflow = Workflow(
+    name="Agno Workflow Sessions 基础课",
+    db=SqliteDb(db_file=str(db_path)),          # 持久化
+    session_state={"completed_topics": [], ...},  # 初始状态
+    add_workflow_history_to_steps=True,            # 注入历史
+    num_history_runs=3,                            # 最近 3 次
+    steps=[
+        Step(name="更新学习状态", executor=update_study_session_state),
+        Step(name="查看共享状态", executor=inspect_study_session_state),
+        Step(name="基于 Session 给出建议", agent=reflection_agent),
+    ],
+)
+
+# 第 1 次运行：建立第一条记录
+workflow.print_response(
+    input="我已经学完了 Workflow、Team 和 Knowledge...",
+    user_id="student@example.com",
+    session_id="workflow_sessions_demo",
+)
+
+# 第 2 次运行：复用同一个 session_id，历史自动注入
+workflow.print_response(
+    input="我还想重点理解 workflow history 的区别。",
+    user_id="student@example.com",
+    session_id="workflow_sessions_demo",  # 同一个 session
+)
+
+# 第 3 次运行：继续验证跨运行连续性
+workflow.print_response(
+    input="请基于前两次记录安排下一课。",
+    user_id="student@example.com",
+    session_id="workflow_sessions_demo",
+)
+```
+
+### 执行流程
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                    Workflow Sessions 执行流程                         │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  第 1 次运行（session_id="demo"）                                     │
+│  ├─ Step 1: update_study_session_state                               │
+│  │  └─ run_context.session_state 写入主题、目标、笔记                  │
+│  ├─ Step 2: inspect_study_session_state                              │
+│  │  └─ 读取 session_state 内容                                       │
+│  └─ Step 3: reflection_agent                                         │
+│     └─ 基于当前状态给出建议                                           │
+│     └─ 运行记录自动保存到 SqliteDb                                    │
+│                                                                      │
+│  第 2 次运行（session_id="demo"，复用同一会话）                        │
+│  ├─ Workflow 自动加载第 1 次的历史记录                                 │
+│  ├─ add_workflow_history_to_steps=True → 历史注入步骤输入              │
+│  ├─ Step 1: 更新 session_state（累积）                                │
+│  ├─ Step 2: 查看 session_state（已有 1 条历史）                       │
+│  └─ Step 3: reflection_agent（基于历史 + 当前状态给出更连续的建议）     │
+│                                                                      │
+│  第 3 次运行（session_id="demo"，继续复用）                            │
+│  ├─ 注入最近 3 次运行历史（num_history_runs=3）                       │
+│  ├─ session_state 持续累积                                           │
+│  └─ reflection_agent 输出跨 3 次运行的连续建议                        │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### RunContext 在函数步骤中的用法
+
+| 属性/方法 | 说明 |
+|-----------|------|
+| `run_context.session_state` | 当前 session 的共享状态字典 |
+| `run_context.session_id` | 当前 session 的 ID |
+| `run_context.user_id` | 当前用户 ID |
+
+### Workflow Sessions vs Agent Sessions
+
+| 维度 | Workflow Sessions | Agent Sessions |
+|------|-------------------|----------------|
+| 存储对象 | 整条工作流的运行记录 | 单个 Agent 的对话历史 |
+| 状态共享 | `session_state` 字典，步骤间共享 | `user_data` / `session_data` |
+| 历史注入 | `add_workflow_history_to_steps` | 自动附加到消息上下文 |
+| 适用场景 | 多步骤工作流的连续运行 | 单 Agent 的多轮对话 |
+
+### 通向 Runtime 的桥梁
+
+```
+Workflow Sessions
+    │
+    ├── SqliteDb → Storage（运行历史持久化）
+    ├── session_state → State Management（跨运行状态共享）
+    ├── session_id → Session Management（会话管理）
+    └── RunContext → Runtime Context（运行时上下文）
+    │
+    ▼
+下一步：Runtime / API / Scheduling
+```
+
+---
+
 # 附录
 
 ## A. 模型层封装
@@ -3664,21 +3813,25 @@ uv pip install -U ddgs chromadb beautifulsoup4 pypdf reportlab
 | 第二阶段 | 10-18 Knowledge / RAG | ✅ 已完成 |
 | 第三阶段 | 16-24 Team / 多智能体 | ✅ 已完成 |
 | 第四阶段 | 25-26 集成与项目结构 | ✅ 已完成 |
-| 第五阶段 | 27-40 Workflow | ✅ 已完成 |
+| 第五阶段 | 27-41 Workflow | ✅ 已完成 |
 
 ### 下一步学习建议
 
 完成本手册的所有课程后，建议继续学习：
 
-1. **继续把应用骨架升级成更完整的小项目**：在长链路基础上补全更多业务模块
-2. **补一层更清晰的模块职责和运行入口**：进一步完善应用结构
-3. **工程化整理**：回顾所有模式，整理出可复用的工作流模板
+1. **Runtime / Sessions 主线补课**：沿官方主线继续补 Runtime 相关能力
+2. **Runtime: Serve as API**：将 Workflow / Agent 以 API 方式对外服务
+3. **Runtime: Storage + Interfaces**：深入了解存储和接口层
+4. **Scheduling**：定时触发 Workflow
+5. **回到更完整的小项目升级**：整合以上能力到应用骨架
 
 ### 推荐学习顺序
 
-1. 继续把应用骨架升级成更完整的小项目
-2. 再补一层更清晰的模块职责和运行入口
-3. 回头做更复杂的工程化整理
+1. Runtime / Sessions 主线补课
+2. Runtime: Serve as API
+3. Runtime: Storage + Interfaces
+4. Scheduling
+5. 回到更完整的小项目升级
 
 ### 参考文档
 

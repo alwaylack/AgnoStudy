@@ -11,6 +11,7 @@
 - [examples/38_workflow_router_orchestration.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\38_workflow_router_orchestration.py:1)
 - [examples/39_real_project_workflow_practice.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\39_real_project_workflow_practice.py:1)
 - [examples/40_long_chain_workflow_app.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\40_long_chain_workflow_app.py:1)
+- [examples/41_workflow_sessions_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\41_workflow_sessions_basics.py:1)
 
 ## 当前学习阶段
 
@@ -35,6 +36,7 @@
 - 更复杂的工作流编排
 - 更长链路的真实项目实践
 - 把长链路 Workflow 回接到应用骨架
+- Workflow Sessions
 
 ## 已完成课程
 
@@ -95,6 +97,7 @@
 - `38_workflow_router_orchestration.py`
 - `39_real_project_workflow_practice.py`
 - `40_long_chain_workflow_app.py`
+- `41_workflow_sessions_basics.py`
 
 ## 当前已经掌握的重点
 
@@ -118,6 +121,7 @@
 - 能用 `Router` 把请求分流到不同子流程中完成更复杂的工作流编排。
 - 能把 `Condition`、`Router`、`Parallel`、`Loop`、`Team`、`Knowledge` 串成一条更长链路的真实项目实践工作流。
 - 能把这条长链路 Workflow 重新接回应用骨架，让应用目录本身承载主链路。
+- 能给 Workflow 接上数据库、复用 `session_id`、启用 workflow history，并用 `session_state` 跨运行共享状态。
 
 ## 当前项目里的关键封装
 
