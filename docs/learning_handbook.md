@@ -75,6 +75,9 @@
 │  ├── 40 长链路应用骨架                             ⭐⭐⭐⭐⭐     │
 │  └── 41 Workflow Sessions                         ⭐⭐⭐⭐       │
 │                                                                 │
+│  第六阶段：Runtime（42+）                        ⭐⭐⭐⭐       │
+│  └── 42 Runtime: Serve as API                    ⭐⭐⭐⭐       │
+│                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -87,6 +90,7 @@
 - [第三阶段：Team / 多智能体（16-24）](#第三阶段team--多智能体16-24)
 - [第四阶段：集成与项目结构（25-26）](#第四阶段集成与项目结构25-26)
 - [第五阶段：Workflow（27-41）](#第五阶段workflow27-41)
+- [第六阶段：Runtime（42+）](#第六阶段runtime42)
 - [附录](#附录)
 
 ---
@@ -3707,6 +3711,189 @@ Workflow Sessions
 
 ---
 
+# 第六阶段：Runtime（42+）
+
+> 本阶段目标：掌握 Agno 的 Runtime 能力，包括将 Agent / Team / Workflow 暴露为 API 服务、持久化存储、以及定时调度。
+
+---
+
+## 6.1 Runtime: Serve as API ⭐⭐⭐⭐
+
+**对应示例**：`examples/42_runtime_serve_api_basics.py` + `study_assistant_app/runtime_api_app.py`
+
+### 学习目标
+
+- 掌握使用 `AgentOS` 将 Agent / Team / Workflow 暴露为 FastAPI 服务
+- 理解 AgentOS 自动生成的 REST 接口
+- 学会添加自定义路由
+- 理解 Runtime 在 Agno 体系中的位置
+
+### 核心概念
+
+**AgentOS**：Agno 的 Runtime 层，负责将 Agent、Team、Workflow 包装成可服务化的 FastAPI 应用。通过 `AgentOS(agents=[...], teams=[...], workflows=[...])` 注册组件后，调用 `agent_os.get_app()` 即可得到标准 FastAPI 实例，可被 `fastapi dev` 加载。
+
+### 项目结构变化
+
+```
+study_assistant_app/
+├── __init__.py                   # 导出四个函数
+├── app.py                        # Team + Knowledge 应用
+├── agents.py                     # Agent 构建
+├── knowledge.py                  # 知识库构建
+├── team.py                       # Team 构建
+├── tools.py                      # 自定义工具
+├── workflow_app.py               # 简单 Workflow 应用
+├── long_chain_workflow_app.py    # 长链路 Workflow 应用
+└── runtime_api_app.py            # 【新增】Runtime API 应用
+```
+
+### `runtime_api_app.py` 核心代码
+
+```python
+from agno.db.sqlite import SqliteDb
+from agno.os import AgentOS
+from models import OpenAIModel
+from .agents import build_research_agent
+from .knowledge import build_study_knowledge
+from .team import build_study_team
+from .workflow_app import build_study_assistant_workflow_app
+
+def create_study_assistant_runtime_app():
+    """创建学习助手的 AgentOS Runtime 应用。"""
+    model_wrapper = OpenAIModel.from_env()
+    knowledge = build_study_knowledge()
+
+    research_agent = build_research_agent(model_wrapper, knowledge)
+    study_team = build_study_team(model_wrapper, knowledge)
+    workflow = build_study_assistant_workflow_app(model_wrapper)
+
+    agent_os = AgentOS(
+        agents=[research_agent],
+        teams=[study_team],
+        workflows=[workflow],
+        db=SqliteDb(db_file=str(db_path)),
+    )
+
+    app = agent_os.get_app()
+
+    @app.get("/study-assistant/health")
+    async def study_assistant_health():
+        """自定义健康检查路由。"""
+        return {"status": "ok", "service": "study-assistant-runtime"}
+
+    return app
+```
+
+### `examples/42_runtime_serve_api_basics.py`
+
+```python
+from study_assistant_app.runtime_api_app import create_study_assistant_runtime_app
+
+# 创建 FastAPI app 实例（可被 fastapi dev 加载）
+app = create_study_assistant_runtime_app()
+
+# 运行说明
+# fastapi dev examples/42_runtime_serve_api_basics.py
+# 然后访问 http://127.0.0.1:8000/docs 查看 OpenAPI 文档
+```
+
+### 运行方式
+
+```bash
+# 启动 Runtime 服务
+fastapi dev examples/42_runtime_serve_api_basics.py
+
+# 访问 OpenAPI 文档
+# http://127.0.0.1:8000/docs
+
+# 自定义健康检查
+# http://127.0.0.1:8000/study-assistant/health
+```
+
+### AgentOS 自动生成的接口
+
+| 接口 | 说明 |
+|------|------|
+| `POST /agents/{agent_id}/runs` | 运行指定 Agent |
+| `POST /teams/{team_id}/runs` | 运行指定 Team |
+| `POST /workflows/{workflow_id}/runs` | 运行指定 Workflow |
+| `GET /docs` | OpenAPI 文档 |
+
+### 架构图
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         AgentOS Runtime                             │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  注册组件：                                                          │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐             │
+│  │   agents=[]  │  │   teams=[]   │  │  workflows=[]    │             │
+│  │  research    │  │  study_team  │  │  workflow_app    │             │
+│  └──────┬──────┘  └──────┬──────┘  └────────┬────────┘             │
+│         │                │                   │                      │
+│         ▼                ▼                   ▼                      │
+│  ┌─────────────────────────────────────────────────────┐            │
+│  │              AgentOS.get_app() → FastAPI             │            │
+│  ├─────────────────────────────────────────────────────┤            │
+│  │  自动生成：                                           │            │
+│  │  POST /agents/{id}/runs                             │            │
+│  │  POST /teams/{id}/runs                              │            │
+│  │  POST /workflows/{id}/runs                          │            │
+│  │                                                     │            │
+│  │  自定义路由：                                         │            │
+│  │  GET /study-assistant/health                        │            │
+│  └─────────────────────────────────────────────────────┘            │
+│                                                                     │
+│  持久化：SqliteDb                                                    │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 复用关系
+
+```
+study_assistant_app/
+├── agents.py ─────────┐
+├── knowledge.py ──────┤
+├── team.py ───────────┤
+├── workflow_app.py ───┤
+│                      │
+│  ┌───────────────────┼──────────────────┐
+│  │                   │                  │
+│  ▼                   ▼                  ▼
+│  app.py         long_chain_      runtime_api_app.py
+│  (Team应用)     workflow_app.py   (AgentOS → FastAPI)
+│                 (长链路应用)       (复用 agent, team,
+│                                    workflow 组件)
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 从 Workflow 到 Runtime 的学习路径
+
+```
+Workflow Sessions (41)
+    │
+    ├── SqliteDb 持久化
+    ├── session_state 跨运行共享
+    └── session_id 会话管理
+    │
+    ▼
+Runtime: Serve as API (42)    ← 当前
+    │
+    ├── AgentOS 注册组件
+    ├── get_app() → FastAPI
+    └── 自动生成 REST 接口
+    │
+    ▼
+下一步：Runtime: Storage + Interfaces
+    │
+    ▼
+Scheduling（定时调度）
+```
+
+---
+
 # 附录
 
 ## A. 模型层封装
@@ -3814,24 +4001,23 @@ uv pip install -U ddgs chromadb beautifulsoup4 pypdf reportlab
 | 第三阶段 | 16-24 Team / 多智能体 | ✅ 已完成 |
 | 第四阶段 | 25-26 集成与项目结构 | ✅ 已完成 |
 | 第五阶段 | 27-41 Workflow | ✅ 已完成 |
+| 第六阶段 | 42 Runtime | ✅ 已完成 |
 
 ### 下一步学习建议
 
 完成本手册的所有课程后，建议继续学习：
 
-1. **Runtime / Sessions 主线补课**：沿官方主线继续补 Runtime 相关能力
-2. **Runtime: Serve as API**：将 Workflow / Agent 以 API 方式对外服务
-3. **Runtime: Storage + Interfaces**：深入了解存储和接口层
-4. **Scheduling**：定时触发 Workflow
-5. **回到更完整的小项目升级**：整合以上能力到应用骨架
+1. **Runtime: Storage + Interfaces**：深入了解存储和接口层
+2. **Scheduling**：定时触发 Workflow
+3. **回到更完整的小项目升级**：整合 Runtime 能力到应用骨架
+4. **工程化整理**：回顾所有模式，整理出可复用的工作流模板
 
 ### 推荐学习顺序
 
-1. Runtime / Sessions 主线补课
-2. Runtime: Serve as API
-3. Runtime: Storage + Interfaces
-4. Scheduling
-5. 回到更完整的小项目升级
+1. Runtime: Storage + Interfaces
+2. Scheduling
+3. 回到更完整的小项目升级
+4. 工程化整理
 
 ### 参考文档
 
