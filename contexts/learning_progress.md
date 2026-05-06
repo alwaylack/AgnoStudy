@@ -12,6 +12,7 @@
 - [examples/39_real_project_workflow_practice.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\39_real_project_workflow_practice.py:1)
 - [examples/40_long_chain_workflow_app.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\40_long_chain_workflow_app.py:1)
 - [examples/41_workflow_sessions_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\41_workflow_sessions_basics.py:1)
+- [examples/42_runtime_serve_api_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\42_runtime_serve_api_basics.py:1)
 
 ## 当前学习阶段
 
@@ -37,6 +38,7 @@
 - 更长链路的真实项目实践
 - 把长链路 Workflow 回接到应用骨架
 - Workflow Sessions
+- Runtime: Serve as API
 
 ## 已完成课程
 
@@ -98,6 +100,7 @@
 - `39_real_project_workflow_practice.py`
 - `40_long_chain_workflow_app.py`
 - `41_workflow_sessions_basics.py`
+- `42_runtime_serve_api_basics.py`
 
 ## 当前已经掌握的重点
 
@@ -122,6 +125,7 @@
 - 能把 `Condition`、`Router`、`Parallel`、`Loop`、`Team`、`Knowledge` 串成一条更长链路的真实项目实践工作流。
 - 能把这条长链路 Workflow 重新接回应用骨架，让应用目录本身承载主链路。
 - 能给 Workflow 接上数据库、复用 `session_id`、启用 workflow history，并用 `session_state` 跨运行共享状态。
+- 能用 `AgentOS` 把现有 agent / team / workflow 暴露成 FastAPI 服务，并理解自动生成 API 的作用。
 
 ## 当前项目里的关键封装
 

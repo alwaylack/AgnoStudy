@@ -70,6 +70,7 @@
 - [examples/39_real_project_workflow_practice.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\39_real_project_workflow_practice.py:1)
 - [examples/40_long_chain_workflow_app.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\40_long_chain_workflow_app.py:1)
 - [examples/41_workflow_sessions_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\41_workflow_sessions_basics.py:1)
+- [examples/42_runtime_serve_api_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\42_runtime_serve_api_basics.py:1)
 
 ## 当前停课点
 
@@ -81,7 +82,7 @@
 
 当前最适合的下一课：
 
-- `Runtime / Sessions 官方主线补课`
+- `Runtime: Storage + Interfaces`
 
 ## 第 27 课和第 28 课在学什么
 
@@ -182,6 +183,14 @@
 - 用 `session_state` 在多次运行之间共享状态
 - 为后续 Runtime / API / Scheduling 主线打基础
 
+第 42 课重点是 Runtime: Serve as API：
+
+- 用 `AgentOS` 把现有 agent / team / workflow 暴露成服务
+- 通过 `agent_os.get_app()` 得到 FastAPI 应用
+- 理解 AgentOS 会自动生成运行接口
+- 演示如何补一个自定义路由
+- 为下一课的 Storage / Interfaces 打基础
+
 ## 环境变量
 
 在项目根目录准备 `.env`：
@@ -237,6 +246,7 @@ python examples/38_workflow_router_orchestration.py
 python examples/39_real_project_workflow_practice.py
 python examples/40_long_chain_workflow_app.py
 python examples/41_workflow_sessions_basics.py
+python examples/42_runtime_serve_api_basics.py
 ```
 
 如果只想回顾当前阶段的整合骨架：
@@ -254,7 +264,7 @@ python examples/26_real_project_structure_basics.py
 
 ## 下次学习建议
 
-下次建议进入“Runtime / Sessions 官方主线补课”，原因是：
+下次建议进入“Runtime: Storage + Interfaces”，原因是：
 
 - 你已经掌握了顺序型 Workflow
 - 你已经掌握了 `Steps`
@@ -270,15 +280,15 @@ python examples/26_real_project_structure_basics.py
 - 你已经完成了更长链路的真实项目实践课
 - 你已经完成了把长链路 Workflow 回接到应用骨架
 - 你已经开始补 Workflow Sessions
-- 现在更适合沿官方主线继续补 Runtime / API / Scheduling
+- 你已经开始补 Runtime 的 API 暴露方式
+- 现在更适合沿官方主线继续补 Storage 和 Interfaces
 
 推荐接下来的学习顺序：
 
-1. Runtime / Sessions 主线补课
-2. Runtime: Serve as API
-3. Runtime: Storage + Interfaces
-4. Scheduling
-5. 最后再回到更完整的小项目升级
+1. Runtime: Storage + Interfaces
+2. Scheduling
+3. 再回到更完整的小项目升级
+4. 最后再做更复杂的工程化整理
 
 参考官方文档：
 
