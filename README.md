@@ -71,6 +71,7 @@
 - [examples/40_long_chain_workflow_app.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\40_long_chain_workflow_app.py:1)
 - [examples/41_workflow_sessions_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\41_workflow_sessions_basics.py:1)
 - [examples/42_runtime_serve_api_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\42_runtime_serve_api_basics.py:1)
+- [examples/43_runtime_storage_interfaces_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\43_runtime_storage_interfaces_basics.py:1)
 
 ## 当前停课点
 
@@ -82,7 +83,7 @@
 
 当前最适合的下一课：
 
-- `Runtime: Storage + Interfaces`
+- `Scheduling`
 
 ## 第 27 课和第 28 课在学什么
 
@@ -191,6 +192,14 @@
 - 演示如何补一个自定义路由
 - 为下一课的 Storage / Interfaces 打基础
 
+第 43 课重点是 Runtime: Storage + Interfaces：
+
+- 继续使用 `AgentOS`
+- 让一个统一的 `db` 承载 Runtime 状态
+- 演示接口的条件注册模式
+- 演示 one-off webhook 如何直接挂到 FastAPI app 上
+- 为下一课 Scheduling 打基础
+
 ## 环境变量
 
 在项目根目录准备 `.env`：
@@ -247,6 +256,7 @@ python examples/39_real_project_workflow_practice.py
 python examples/40_long_chain_workflow_app.py
 python examples/41_workflow_sessions_basics.py
 python examples/42_runtime_serve_api_basics.py
+python examples/43_runtime_storage_interfaces_basics.py
 ```
 
 如果只想回顾当前阶段的整合骨架：
@@ -264,7 +274,7 @@ python examples/26_real_project_structure_basics.py
 
 ## 下次学习建议
 
-下次建议进入“Runtime: Storage + Interfaces”，原因是：
+下次建议进入“Scheduling”，原因是：
 
 - 你已经掌握了顺序型 Workflow
 - 你已经掌握了 `Steps`
@@ -281,14 +291,14 @@ python examples/26_real_project_structure_basics.py
 - 你已经完成了把长链路 Workflow 回接到应用骨架
 - 你已经开始补 Workflow Sessions
 - 你已经开始补 Runtime 的 API 暴露方式
-- 现在更适合沿官方主线继续补 Storage 和 Interfaces
+- 你已经开始补 Storage 和 Interfaces
+- 现在更适合沿官方主线继续补 Scheduling
 
 推荐接下来的学习顺序：
 
-1. Runtime: Storage + Interfaces
-2. Scheduling
-3. 再回到更完整的小项目升级
-4. 最后再做更复杂的工程化整理
+1. Scheduling
+2. 再回到更完整的小项目升级
+3. 最后再做更复杂的工程化整理
 
 参考官方文档：
 

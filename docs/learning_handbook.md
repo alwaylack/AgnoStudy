@@ -76,7 +76,8 @@
 │  └── 41 Workflow Sessions                         ⭐⭐⭐⭐       │
 │                                                                 │
 │  第六阶段：Runtime（42+）                        ⭐⭐⭐⭐       │
-│  └── 42 Runtime: Serve as API                    ⭐⭐⭐⭐       │
+│  ├── 42 Runtime: Serve as API                    ⭐⭐⭐⭐       │
+│  └── 43 Runtime: Storage + Interfaces             ⭐⭐⭐⭐       │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -3879,18 +3880,168 @@ Workflow Sessions (41)
     └── session_id 会话管理
     │
     ▼
-Runtime: Serve as API (42)    ← 当前
+Runtime: Serve as API (42)
     │
     ├── AgentOS 注册组件
     ├── get_app() → FastAPI
     └── 自动生成 REST 接口
     │
     ▼
-下一步：Runtime: Storage + Interfaces
+Runtime: Storage + Interfaces (43)    ← 当前
+    │
+    ├── 统一 SqliteDb 存储
+    ├── 条件接口注册（Slack / AGUI）
+    └── One-off webhook 路由
     │
     ▼
 Scheduling（定时调度）
 ```
+
+---
+
+## 6.2 Runtime: Storage + Interfaces ⭐⭐⭐⭐
+
+**对应示例**：`examples/43_runtime_storage_interfaces_basics.py` + `study_assistant_app/runtime_storage_interfaces_app.py`
+
+### 学习目标
+
+- 掌握统一 `SqliteDb` 存储如何承载整个 Runtime 状态
+- 理解条件接口注册模式（有凭据就挂，没凭据不阻塞）
+- 学会 one-off webhook 如何直接挂到 FastAPI app 上
+
+### 核心概念
+
+**Storage + Interfaces**：在 AgentOS 基础上，进一步演示三件事：① 一个统一的 `db` 实例承载所有组件状态；② `interfaces=[]` 参数支持按条件注册聊天接口（如 Slack）；③ 直接在 FastAPI app 上挂自定义 webhook 路由。
+
+### 关键模式
+
+#### 1. 统一存储
+
+```python
+from agno.db.sqlite import SqliteDb
+from agno.os import AgentOS
+
+db = SqliteDb(db_file=str(db_path))
+
+agent_os = AgentOS(
+    agents=[research_agent],
+    teams=[study_team],
+    workflows=[workflow],
+    db=db,                   # 统一承载所有组件状态
+    interfaces=interfaces,
+)
+```
+
+#### 2. 条件接口注册
+
+```python
+import os
+
+interfaces = []
+interface_status = []
+
+# 有凭据就挂 Slack 接口，没凭据也不阻塞本地开发
+slack_token = os.getenv("AGNO_SLACK_BOT_TOKEN")
+slack_signing_secret = os.getenv("AGNO_SLACK_SIGNING_SECRET")
+
+if slack_token and slack_signing_secret:
+    from agno.os.interfaces.slack import Slack
+    interfaces.append(
+        Slack(agent=research_agent, token=slack_token, signing_secret=slack_signing_secret)
+    )
+    interface_status.append("slack: enabled")
+else:
+    interface_status.append("slack: skipped (missing credentials)")
+
+# AGUI 接口
+try:
+    from agno.os.interfaces.agui import AGUI
+    interfaces.append(AGUI(agent=research_agent))
+    interface_status.append("agui: enabled")
+except ImportError:
+    interface_status.append("agui: unavailable")
+
+agent_os = AgentOS(
+    ...,
+    interfaces=interfaces,    # 按条件注册
+)
+```
+
+#### 3. One-off Webhook
+
+```python
+app = agent_os.get_app()
+
+@app.post("/study-assistant/webhooks/lesson-note")
+async def lesson_note_webhook(payload: dict):
+    """直接在 FastAPI app 上挂自定义 webhook 路由。"""
+    note = payload.get("note", "")
+    lesson = payload.get("lesson", "unknown")
+    response = await research_agent.arun(
+        f"请基于这条课程笔记做一个简短总结。课程：{lesson}。笔记：{note}",
+        user_id="webhook-system",
+        session_id=f"lesson-note-{lesson}",
+    )
+    return {"ok": True, "lesson": lesson, "summary": response.content}
+```
+
+### `runtime_storage_interfaces_app.py` 架构
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│              AgentOS (Storage + Interfaces)                          │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  统一存储：SqliteDb                                                  │
+│  ┌───────────────────────────────────────────────────────┐          │
+│  │  db = SqliteDb(db_file=".../runtime_interfaces.db")   │          │
+│  │  承载：agent 状态 + team 状态 + workflow 状态          │          │
+│  └───────────────────────────────────────────────────────┘          │
+│                                                                     │
+│  条件接口注册：                                                      │
+│  ┌───────────────────┐  ┌───────────────────┐                      │
+│  │  Slack（有凭据时）  │  │  AGUI（可用时）    │                      │
+│  │  agent=research    │  │  agent=research    │                      │
+│  └─────────┬─────────┘  └─────────┬─────────┘                      │
+│            │                      │                                 │
+│            ▼                      ▼                                 │
+│  ┌─────────────────────────────────────────────────────┐            │
+│  │           AgentOS.get_app() → FastAPI                │            │
+│  ├─────────────────────────────────────────────────────┤            │
+│  │  自动生成接口：                                       │            │
+│  │  POST /agents/{id}/runs                             │            │
+│  │  POST /teams/{id}/runs                              │            │
+│  │  POST /workflows/{id}/runs                          │            │
+│  │                                                     │            │
+│  │  自定义路由：                                         │            │
+│  │  GET  /study-assistant/runtime/overview             │            │
+│  │  POST /study-assistant/webhooks/lesson-note         │            │
+│  └─────────────────────────────────────────────────────┘            │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 运行方式
+
+```bash
+# 启动 Runtime 服务
+fastapi dev examples/43_runtime_storage_interfaces_basics.py
+
+# 查看 Runtime 概览（含存储和接口状态）
+# http://127.0.0.1:8000/study-assistant/runtime/overview
+
+# 测试 webhook
+# POST http://127.0.0.1:8000/study-assistant/webhooks/lesson-note
+```
+
+### Runtime 课程对比
+
+| 维度 | 42: Serve as API | 43: Storage + Interfaces |
+|------|------------------|--------------------------|
+| 存储 | `SqliteDb` 基础使用 | 统一 `db` 承载所有组件 |
+| 接口 | 无条件注册 | 按凭据条件注册（Slack / AGUI） |
+| 路由 | 基础健康检查 | Runtime 概览 + one-off webhook |
+| 新增参数 | `agents`, `teams`, `workflows` | +`db`, +`interfaces` |
 
 ---
 
@@ -4001,23 +4152,21 @@ uv pip install -U ddgs chromadb beautifulsoup4 pypdf reportlab
 | 第三阶段 | 16-24 Team / 多智能体 | ✅ 已完成 |
 | 第四阶段 | 25-26 集成与项目结构 | ✅ 已完成 |
 | 第五阶段 | 27-41 Workflow | ✅ 已完成 |
-| 第六阶段 | 42 Runtime | ✅ 已完成 |
+| 第六阶段 | 42-43 Runtime | ✅ 已完成 |
 
 ### 下一步学习建议
 
 完成本手册的所有课程后，建议继续学习：
 
-1. **Runtime: Storage + Interfaces**：深入了解存储和接口层
-2. **Scheduling**：定时触发 Workflow
-3. **回到更完整的小项目升级**：整合 Runtime 能力到应用骨架
-4. **工程化整理**：回顾所有模式，整理出可复用的工作流模板
+1. **Scheduling**：定时触发 Workflow
+2. **回到更完整的小项目升级**：整合 Runtime 能力到应用骨架
+3. **工程化整理**：回顾所有模式，整理出可复用的工作流模板
 
 ### 推荐学习顺序
 
-1. Runtime: Storage + Interfaces
-2. Scheduling
-3. 回到更完整的小项目升级
-4. 工程化整理
+1. Scheduling
+2. 回到更完整的小项目升级
+3. 工程化整理
 
 ### 参考文档
 
