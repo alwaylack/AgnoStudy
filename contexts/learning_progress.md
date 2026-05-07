@@ -14,6 +14,7 @@
 - [examples/41_workflow_sessions_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\41_workflow_sessions_basics.py:1)
 - [examples/42_runtime_serve_api_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\42_runtime_serve_api_basics.py:1)
 - [examples/43_runtime_storage_interfaces_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\43_runtime_storage_interfaces_basics.py:1)
+- [examples/44_runtime_scheduling_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\44_runtime_scheduling_basics.py:1)
 
 ## 当前学习阶段
 
@@ -41,6 +42,7 @@
 - Workflow Sessions
 - Runtime: Serve as API
 - Runtime: Storage + Interfaces
+- Scheduling
 
 ## 已完成课程
 
@@ -104,6 +106,7 @@
 - `41_workflow_sessions_basics.py`
 - `42_runtime_serve_api_basics.py`
 - `43_runtime_storage_interfaces_basics.py`
+- `44_runtime_scheduling_basics.py`
 
 ## 当前已经掌握的重点
 
@@ -130,6 +133,7 @@
 - 能给 Workflow 接上数据库、复用 `session_id`、启用 workflow history，并用 `session_state` 跨运行共享状态。
 - 能用 `AgentOS` 把现有 agent / team / workflow 暴露成 FastAPI 服务，并理解自动生成 API 的作用。
 - 能理解 Runtime 的统一存储思路、接口的条件注册方式，以及 one-off webhook 的接入方式。
+- 能理解 startup-registered schedules、agent-driven scheduling，以及调度如何触发 agent / workflow 端点。
 
 ## 当前项目里的关键封装
 

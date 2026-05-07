@@ -77,7 +77,8 @@
 │                                                                 │
 │  第六阶段：Runtime（42+）                        ⭐⭐⭐⭐       │
 │  ├── 42 Runtime: Serve as API                    ⭐⭐⭐⭐       │
-│  └── 43 Runtime: Storage + Interfaces             ⭐⭐⭐⭐       │
+│  ├── 43 Runtime: Storage + Interfaces             ⭐⭐⭐⭐       │
+│  └── 44 Scheduling                               ⭐⭐⭐⭐       │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -3887,14 +3888,21 @@ Runtime: Serve as API (42)
     └── 自动生成 REST 接口
     │
     ▼
-Runtime: Storage + Interfaces (43)    ← 当前
+Runtime: Storage + Interfaces (43)
     │
     ├── 统一 SqliteDb 存储
     ├── 条件接口注册（Slack / AGUI）
     └── One-off webhook 路由
     │
     ▼
-Scheduling（定时调度）
+Scheduling (44)    ← 当前
+    │
+    ├── Startup-registered schedule
+    ├── Agent-driven SchedulerTools
+    └── scheduler=True + lifespan
+    │
+    ▼
+下一步：把 Runtime 能力接回更完整的小项目
 ```
 
 ---
@@ -4045,6 +4053,175 @@ fastapi dev examples/43_runtime_storage_interfaces_basics.py
 
 ---
 
+## 6.3 Scheduling ⭐⭐⭐⭐
+
+**对应示例**：`examples/44_runtime_scheduling_basics.py` + `study_assistant_app/runtime_scheduling_app.py`
+
+### 学习目标
+
+- 掌握 AgentOS 的调度子系统（`scheduler=True`）
+- 理解 `ScheduleManager` 启动时注册固定调度任务
+- 理解 `SchedulerTools` 让 agent 通过工具调用创建调度
+- 学会 `lifespan` 上下文管理器在启动时初始化调度
+
+### 核心概念
+
+**Scheduling**：Agno 的定时调度能力，通过 AgentOS 的 `scheduler=True` 开启调度子系统。调度任务最终命中的是 agent / team / workflow 的运行端点（如 `POST /workflows/{id}/runs`）。支持两种模式：① 启动时通过 `ScheduleManager` 注册固定调度；② 运行时通过 `SchedulerTools` 让 agent 自主创建调度。
+
+### 两种调度模式
+
+| 模式 | 实现方式 | 适用场景 |
+|------|----------|----------|
+| **Startup-registered schedule** | `ScheduleManager.create()` 在 `lifespan` 中执行 | 固定时间、固定任务（如每日早报） |
+| **Agent-driven scheduling** | `SchedulerTools` 作为 agent 工具 | 用户动态创建的调度（如“明天提醒我”） |
+
+### 核心代码
+
+```python
+from contextlib import asynccontextmanager
+from agno.agent import Agent
+from agno.db.sqlite import SqliteDb
+from agno.os import AgentOS
+from agno.scheduler import ScheduleManager
+from agno.tools.scheduler import SchedulerTools
+
+# 1. 统一存储
+db = SqliteDb(db_file=str(db_path))
+workflow = build_study_assistant_workflow_app(model_wrapper)
+workflow_run_endpoint = f"/workflows/{workflow.id}/runs"
+
+# 2. 带 SchedulerTools 的 agent（agent 可自主创建调度）
+scheduler_agent = Agent(
+    id="study-scheduler-agent",
+    name="学习计划调度助手",
+    model=model_wrapper.get_model(),
+    db=db,
+    tools=[
+        SchedulerTools(
+            db=db,
+            default_endpoint=workflow_run_endpoint,
+            default_method="POST",
+            default_timezone="Asia/Shanghai",
+        )
+    ],
+    instructions=[
+        "你负责帮助用户创建和管理学习计划调度任务。",
+        "当用户想安排定时执行时，请优先使用 SchedulerTools。",
+    ],
+    markdown=True,
+)
+
+# 3. 启动时注册固定调度（startup-registered schedule）
+@asynccontextmanager
+async def lifespan(app, agent_os=None):
+    schedule_manager = ScheduleManager(db=db)
+    schedule_manager.create(
+        name="study_assistant_weekday_digest",
+        cron="0 9 * * 1-5",                         # 工作日早上 9 点
+        endpoint=workflow_run_endpoint,               # 命中 workflow 运行端点
+        method="POST",
+        description="工作日早上 9 点生成学习推进建议。",
+        payload={"message": "请生成今天的 Agno 学习推进建议。"},
+        timezone="Asia/Shanghai",
+        if_exists="update",
+    )
+    yield
+
+# 4. AgentOS 开启调度
+agent_os = AgentOS(
+    agents=[scheduler_agent],
+    workflows=[workflow],
+    db=db,
+    scheduler=True,                    # 开启调度子系统
+    scheduler_poll_interval=15,        # 每 15 秒检查一次到期任务
+    lifespan=lifespan,                 # 启动时执行初始化
+)
+
+app = agent_os.get_app()
+```
+
+### `runtime_scheduling_app.py` 架构
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        AgentOS (Scheduling)                             │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  统一存储：SqliteDb                                                      │
+│  ┌─────────────────────────────────────────────────────────┐            │
+│  │  db = SqliteDb(db_file=".../scheduler.db")              │            │
+│  │  承载：调度记录 + agent 状态 + workflow 状态              │            │
+│  └─────────────────────────────────────────────────────────┘            │
+│                                                                         │
+│  调度模式 1：Startup-registered schedule                                 │
+│  ┌─────────────────────────────────────────────────────────┐            │
+│  │  lifespan() {                                           │            │
+│  │    ScheduleManager(db=db).create(                       │            │
+│  │      name="weekday_digest",                             │            │
+│  │      cron="0 9 * * 1-5",                                │            │
+│  │      endpoint="/workflows/{id}/runs",                   │            │
+│  │    )                                                    │            │
+│  │  }                                                      │            │
+│  └─────────────────────────────────────────────────────────┘            │
+│                                                                         │
+│  调度模式 2：Agent-driven scheduling                                     │
+│  ┌─────────────────────────────────────────────────────────┐            │
+│  │  scheduler_agent = Agent(                               │            │
+│  │    tools=[SchedulerTools(db=db, ...)]                   │            │
+│  │  )                                                      │            │
+│  │  用户：“明天早上 9 点提醒我学 Scheduling”                   │            │
+│  │  → agent 调用 SchedulerTools 创建调度                    │            │
+│  └─────────────────────────────────────────────────────────┘            │
+│                                                                         │
+│  AgentOS(scheduler=True, scheduler_poll_interval=15)                    │
+│  ┌─────────────────────────────────────────────────────────┐            │
+│  │  自动生成接口：                                           │            │
+│  │  GET  /schedules           → 查看所有调度                 │            │
+│  │  POST /schedules           → 创建调度                    │            │
+│  │  POST /schedules/{id}/trigger → 手动触发                  │            │
+│  │  + agent / team / workflow 运行端点                       │            │
+│  └─────────────────────────────────────────────────────────┘            │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 运行方式
+
+```bash
+# 启动 Runtime 服务
+fastapi dev examples/44_runtime_scheduling_basics.py
+
+# 查看调度概览
+# http://127.0.0.1:8000/study-assistant/scheduling/overview
+
+# 查看所有调度
+# http://127.0.0.1:8000/schedules
+```
+
+### Runtime 三课对比
+
+| 维度 | 42: Serve as API | 43: Storage + Interfaces | 44: Scheduling |
+|------|------------------|--------------------------|----------------|
+| 存储 | `SqliteDb` 基础 | 统一 `db` | 统一 `db` + 调度记录 |
+| 接口 | 无条件注册 | 条件注册 | 调度端点自动生成 |
+| 路由 | 健康检查 | 概览 + webhook | +`/schedules` 系列 |
+| 新增参数 | `agents`, `teams`, `workflows` | +`db`, +`interfaces` | +`scheduler`, +`lifespan` |
+| 核心能力 | API 暴露 | 存储 + 接口 | 定时调度 |
+
+### Runtime 学习路径总结
+
+```
+41: Workflow Sessions ─── 持久化 + 状态共享
+42: Serve as API ──────── AgentOS → FastAPI
+43: Storage + Interfaces  统一存储 + 条件接口 + webhook
+44: Scheduling ────────── 定时调度 + agent-driven scheduling
+    │
+    ▼
+下一步：把 Runtime 能力接回更完整的小项目
+```
+
+---
+
 # 附录
 
 ## A. 模型层封装
@@ -4152,21 +4329,19 @@ uv pip install -U ddgs chromadb beautifulsoup4 pypdf reportlab
 | 第三阶段 | 16-24 Team / 多智能体 | ✅ 已完成 |
 | 第四阶段 | 25-26 集成与项目结构 | ✅ 已完成 |
 | 第五阶段 | 27-41 Workflow | ✅ 已完成 |
-| 第六阶段 | 42-43 Runtime | ✅ 已完成 |
+| 第六阶段 | 42-44 Runtime | ✅ 已完成 |
 
 ### 下一步学习建议
 
 完成本手册的所有课程后，建议继续学习：
 
-1. **Scheduling**：定时触发 Workflow
-2. **回到更完整的小项目升级**：整合 Runtime 能力到应用骨架
-3. **工程化整理**：回顾所有模式，整理出可复用的工作流模板
+1. **把 Runtime 能力接回更完整的小项目**：将 Scheduling + API + Storage 整合到应用骨架
+2. **工程化整理**：回顾所有模式，整理出可复用的模板
 
 ### 推荐学习顺序
 
-1. Scheduling
-2. 回到更完整的小项目升级
-3. 工程化整理
+1. 把 Runtime 能力接回更完整的小项目
+2. 工程化整理
 
 ### 参考文档
 

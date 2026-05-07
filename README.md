@@ -72,6 +72,7 @@
 - [examples/41_workflow_sessions_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\41_workflow_sessions_basics.py:1)
 - [examples/42_runtime_serve_api_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\42_runtime_serve_api_basics.py:1)
 - [examples/43_runtime_storage_interfaces_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\43_runtime_storage_interfaces_basics.py:1)
+- [examples/44_runtime_scheduling_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\44_runtime_scheduling_basics.py:1)
 
 ## 当前停课点
 
@@ -83,7 +84,7 @@
 
 当前最适合的下一课：
 
-- `Scheduling`
+- `回到更完整的小项目升级`
 
 ## 第 27 课和第 28 课在学什么
 
@@ -200,6 +201,14 @@
 - 演示 one-off webhook 如何直接挂到 FastAPI app 上
 - 为下一课 Scheduling 打基础
 
+第 44 课重点是 Scheduling：
+
+- 在 `AgentOS` 中开启 `scheduler=True`
+- 演示 startup-registered schedule
+- 演示带 `SchedulerTools` 的 agent-driven scheduling
+- 理解调度最终执行的仍然是 agent / workflow 端点
+- 为下一阶段把应用升级成更完整的小项目打基础
+
 ## 环境变量
 
 在项目根目录准备 `.env`：
@@ -257,6 +266,7 @@ python examples/40_long_chain_workflow_app.py
 python examples/41_workflow_sessions_basics.py
 python examples/42_runtime_serve_api_basics.py
 python examples/43_runtime_storage_interfaces_basics.py
+python examples/44_runtime_scheduling_basics.py
 ```
 
 如果只想回顾当前阶段的整合骨架：
@@ -274,7 +284,7 @@ python examples/26_real_project_structure_basics.py
 
 ## 下次学习建议
 
-下次建议进入“Scheduling”，原因是：
+下次建议进入“回到更完整的小项目升级”，原因是：
 
 - 你已经掌握了顺序型 Workflow
 - 你已经掌握了 `Steps`
@@ -292,12 +302,13 @@ python examples/26_real_project_structure_basics.py
 - 你已经开始补 Workflow Sessions
 - 你已经开始补 Runtime 的 API 暴露方式
 - 你已经开始补 Storage 和 Interfaces
-- 现在更适合沿官方主线继续补 Scheduling
+- 你已经开始补 Scheduling
+- 现在更适合把这几节 Runtime 能力重新接回更完整的小项目
 
 推荐接下来的学习顺序：
 
-1. Scheduling
-2. 再回到更完整的小项目升级
+1. 回到更完整的小项目升级
+2. 再补一层更清晰的模块职责和运行入口
 3. 最后再做更复杂的工程化整理
 
 参考官方文档：
