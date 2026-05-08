@@ -75,10 +75,15 @@
 │  ├── 40 长链路应用骨架                             ⭐⭐⭐⭐⭐     │
 │  └── 41 Workflow Sessions                         ⭐⭐⭐⭐       │
 │                                                                 │
-│  第六阶段：Runtime（42+）                        ⭐⭐⭐⭐       │
+│  第六阶段：Runtime（42-45）                      ⭐⭐⭐⭐       │
 │  ├── 42 Runtime: Serve as API                    ⭐⭐⭐⭐       │
 │  ├── 43 Runtime: Storage + Interfaces             ⭐⭐⭐⭐       │
-│  └── 44 Scheduling                               ⭐⭐⭐⭐       │
+│  ├── 44 Scheduling                               ⭐⭐⭐⭐       │
+│  └── 45 产品应用基础                              ⭐⭐⭐⭐       │
+│                                                                 │
+│  第七阶段：官方 SDK Introduction（46-47）         ⭐⭐⭐⭐       │
+│  ├── 46 Input & Output                            ⭐⭐⭐⭐       │
+│  └── 47 Database                                  ⭐⭐⭐⭐       │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -92,7 +97,8 @@
 - [第三阶段：Team / 多智能体（16-24）](#第三阶段team--多智能体16-24)
 - [第四阶段：集成与项目结构（25-26）](#第四阶段集成与项目结构25-26)
 - [第五阶段：Workflow（27-41）](#第五阶段workflow27-41)
-- [第六阶段：Runtime（42+）](#第六阶段runtime42)
+- [第六阶段：Runtime（42-45）](#第六阶段runtime42-45)
+- [第七阶段：官方 SDK Introduction（46-47）](#第七阶段官方-sdk-introduction46-47)
 - [附录](#附录)
 
 ---
@@ -3713,7 +3719,7 @@ Workflow Sessions
 
 ---
 
-# 第六阶段：Runtime（42+）
+# 第六阶段：Runtime（42-45）
 
 > 本阶段目标：掌握 Agno 的 Runtime 能力，包括将 Agent / Team / Workflow 暴露为 API 服务、持久化存储、以及定时调度。
 
@@ -4215,9 +4221,283 @@ fastapi dev examples/44_runtime_scheduling_basics.py
 42: Serve as API ──────── AgentOS → FastAPI
 43: Storage + Interfaces  统一存储 + 条件接口 + webhook
 44: Scheduling ────────── 定时调度 + agent-driven scheduling
+45: 产品应用基础 ──────── 统一收拢 Runtime 能力
     │
     ▼
-下一步：把 Runtime 能力接回更完整的小项目
+下一步：官方 SDK Introduction 对齐
+```
+
+---
+
+## 6.4 产品应用基础 ⭐⭐⭐⭐
+
+**对应示例**：`examples/45_product_app_basics.py` + `study_assistant_app/product_app.py`
+
+### 学习目标
+
+- 掌握将分散的 Runtime 能力收拢到一个统一的产品入口
+- 理解 `StudyAssistantProductConfig` 配置驱动的产品骨架
+- 学会用 `AgentOS` 同时承载 agent / team / workflow / scheduler / interfaces
+
+### 核心概念
+
+**产品应用基础**：把前面补过的 Runtime 能力（AgentOS、SqliteDb、ScheduleManager、SchedulerTools、条件接口注册）收拢成一个统一应用入口，使项目更接近可部署的最小产品形态。
+
+### `product_app.py` 核心代码
+
+```python
+from contextlib import asynccontextmanager
+from dataclasses import dataclass
+from agno.agent import Agent
+from agno.db.sqlite import SqliteDb
+from agno.os import AgentOS
+from agno.scheduler import ScheduleManager
+from agno.tools.scheduler import SchedulerTools
+
+@dataclass
+class StudyAssistantProductConfig:
+    """统一管理最小产品骨架会用到的关键开关。"""
+    enable_scheduler: bool = True
+    enable_interfaces: bool = True
+    scheduler_timezone: str = "Asia/Shanghai"
+
+def create_study_assistant_product_app(config=None):
+    """创建更接近最小产品形态的学习助手应用。"""
+    runtime_config = config or StudyAssistantProductConfig()
+    db = SqliteDb(db_file=str(db_path))
+
+    # 复用已有组件
+    research_agent = build_research_agent(model_wrapper, knowledge)
+    study_team = build_study_team(model_wrapper, knowledge)
+    workflow = build_study_assistant_workflow_app(model_wrapper)
+
+    # 调度 Agent
+    scheduler_agent = Agent(
+        id="study-assistant-product-scheduler",
+        tools=[SchedulerTools(db=db, ...)],
+        ...
+    )
+
+    # 条件接口注册
+    interfaces = []
+    if runtime_config.enable_interfaces:
+        # Slack / AGUI 条件注册...
+        pass
+
+    # 启动时注册调度
+    @asynccontextmanager
+    async def lifespan(app, agent_os=None):
+        if runtime_config.enable_scheduler:
+            ScheduleManager(db=db).create(
+                name="study_assistant_product_daily_digest",
+                cron="0 9 * * 1-5",
+                endpoint=workflow_run_endpoint,
+                ...
+            )
+        yield
+
+    agent_os = AgentOS(
+        name="study-assistant-product",
+        agents=[research_agent, scheduler_agent],
+        teams=[study_team],
+        workflows=[workflow],
+        db=db,
+        interfaces=interfaces,
+        scheduler=runtime_config.enable_scheduler,
+        scheduler_poll_interval=15,
+        lifespan=lifespan,
+    )
+
+    app = agent_os.get_app()
+
+    @app.get("/study-assistant/product/health")
+    async def product_health(): ...
+
+    @app.get("/study-assistant/product/config")
+    async def product_config(): ...
+
+    return app
+```
+
+### 运行方式
+
+```bash
+fastapi dev examples/45_product_app_basics.py
+# http://127.0.0.1:8000/docs
+# http://127.0.0.1:8000/study-assistant/product/health
+# http://127.0.0.1:8000/study-assistant/product/config
+```
+
+### Runtime 课程对比（含产品应用）
+
+| 维度 | 42 | 43 | 44 | 45 |
+|------|----|----|----|----|
+| 核心能力 | API 暴露 | 存储 + 接口 | 定时调度 | 统一收拢 |
+| 组件注册 | agents, teams, workflows | +db, +interfaces | +scheduler, +lifespan | 全部整合 |
+| 接近产品 | 能跑 | 能存储 | 能定时 | **最小产品形态** |
+
+---
+
+# 第七阶段：官方 SDK Introduction（46-47）
+
+> 本阶段目标：对齐 Agno 官方 SDK Introduction 文档，补齐 Input & Output 和 Database 基础能力。
+
+---
+
+## 7.1 Input & Output ⭐⭐⭐⭐
+
+**对应示例**：`examples/46_input_output_basics.py`
+
+### 学习目标
+
+- 掌握 `input_schema` 约束输入结构
+- 掌握 `output_schema` 约束返回结构
+- 理解 `expected_output` 补充输出预期
+- 学会 `save_response_to_file` 自动保存结果到文件
+
+### 核心概念
+
+**Input & Output**：对齐官方 SDK Introduction 中的「Input & Output」，把结构化输入、结构化输出、输出预期和文件保存四个能力放在一起演示。
+
+### 核心代码
+
+```python
+from pydantic import BaseModel, Field
+from models import OpenAIModel
+
+class StudyRequest(BaseModel):
+    """定义输入给 Agent 的结构化学习请求。"""
+    topic: str = Field(description="本次学习主题")
+    current_stage: str = Field(description="当前学习阶段")
+    goals: list[str] = Field(description="这次希望完成的目标")
+    available_minutes: int = Field(description="本次可投入的学习时长，单位是分钟")
+
+class StudyOutput(BaseModel):
+    """定义 Agent 返回的结构化学习结果。"""
+    summary: str = Field(description="对当前学习请求的简短总结")
+    recommended_next_step: str = Field(description="最推荐的下一步动作")
+    key_points: list[str] = Field(description="2 到 4 条关键学习要点")
+    practice_task: str = Field(description="一个可以立刻执行的练习任务")
+
+def run_input_output_basics_example() -> None:
+    model = OpenAIModel.from_env()
+    agent = model.create_agent(
+        name="Agno Input Output Agent",
+        instructions=[...],
+        input_schema=StudyRequest,           # ① 结构化输入
+        expected_output="返回简洁学习建议",  # ② 输出预期
+        output_schema=StudyOutput,           # ③ 结构化输出
+        use_json_mode=True,
+        save_response_to_file=str(output_file),  # ④ 自动保存到文件
+    )
+
+    # 用 dict 传入结构化输入
+    response = agent.run(
+        input={
+            "topic": "Agno Input & Output",
+            "current_stage": "已经学到 Runtime 和产品化入口",
+            "goals": ["理解结构化输入输出", "学会保存结果"],
+            "available_minutes": 40,
+        }
+    )
+```
+
+### 四个关键参数
+
+| 参数 | 说明 |
+|------|------|
+| `input_schema` | 约束输入结构，支持 Pydantic BaseModel 或 dict |
+| `expected_output` | 补充文字描述，告诉 Agent 输出应该长什么样 |
+| `output_schema` | 约束返回结构，Agent 输出会自动按此结构化 |
+| `save_response_to_file` | 自动把最终结果保存到指定文件路径 |
+
+### 运行方式
+
+```bash
+python examples/46_input_output_basics.py
+# 输出保存到 tmp/lesson_46_input_output_result.md
+```
+
+---
+
+## 7.2 Database ⭐⭐⭐⭐
+
+**对应示例**：`examples/47_database_basics.py`
+
+### 学习目标
+
+- 掌握显式创建 `SqliteDb` 并传给 Agent
+- 学会用 `get_session()` 读取当前 session 的持久化结果
+- 学会用 `get_sessions()` 查看数据库中已保存的 session 列表
+- 理解 `session_table`、`metadata`、`agent_data`、`session_data` 的含义
+
+### 核心概念
+
+**Database**：对齐官方 SDK Introduction 中的「Database」，显式创建数据库对象，观察 Agent 运行后的持久化结果。
+
+### 核心代码
+
+```python
+from agno.db.base import SessionType
+from agno.db.sqlite import SqliteDb
+from models import OpenAIModel
+
+def print_database_snapshot(db: SqliteDb, session_id: str, user_id: str) -> None:
+    """读取数据库里的 Session 记录。"""
+    saved_session = db.get_session(
+        session_id=session_id,
+        session_type=SessionType.AGENT,
+        user_id=user_id,
+    )
+    all_sessions = db.get_sessions(
+        session_type=SessionType.AGENT,
+        user_id=user_id,
+        limit=20,
+    )
+    print(f"当前用户的 Agent Session 数量: {len(all_sessions)}")
+    print(f"保存的运行次数: {len(saved_session.runs or [])}")
+    print(f"metadata: {saved_session.metadata or {}}")
+
+def run_database_basics_example() -> None:
+    db = SqliteDb(
+        db_file=str(db_path),
+        session_table="lesson_47_agent_sessions",  # 自定义表名
+    )
+
+    model = OpenAIModel.from_env()
+    agent = model.create_agent(
+        name="Agno Database Agent",
+        db=db,                    # 传入数据库
+        metadata={"course": "47_database_basics"},
+        add_history_to_context=True,
+        num_history_runs=2,
+        instructions=[...],
+    )
+
+    # 第 1 次运行：写入第一条 session 记录
+    agent.run("我已经学到了 Input & Output...", user_id=user_id, session_id=session_id)
+
+    # 第 2 次运行：复用同一个 session_id
+    agent.run("请基于我刚才的进度...", user_id=user_id, session_id=session_id)
+
+    # 查看数据库快照
+    print_database_snapshot(db=db, session_id=session_id, user_id=user_id)
+```
+
+### 关键接口
+
+| 接口 | 说明 |
+|------|------|
+| `SqliteDb(db_file=..., session_table=...)` | 显式创建数据库，可自定义表名 |
+| `db.get_session(session_id=..., session_type=..., user_id=...)` | 读取单个 session 的持久化记录 |
+| `db.get_sessions(session_type=..., user_id=..., limit=...)` | 获取 session 列表 |
+| `SessionType.AGENT` | 指定 session 类型为 Agent |
+
+### 运行方式
+
+```bash
+python examples/47_database_basics.py
+# 数据库保存到 tmp/lesson_47_database.db
 ```
 
 ---
@@ -4329,19 +4609,32 @@ uv pip install -U ddgs chromadb beautifulsoup4 pypdf reportlab
 | 第三阶段 | 16-24 Team / 多智能体 | ✅ 已完成 |
 | 第四阶段 | 25-26 集成与项目结构 | ✅ 已完成 |
 | 第五阶段 | 27-41 Workflow | ✅ 已完成 |
-| 第六阶段 | 42-44 Runtime | ✅ 已完成 |
+| 第六阶段 | 42-45 Runtime | ✅ 已完成 |
+| 第七阶段 | 46-47 SDK Introduction | ✅ 已完成 |
 
 ### 下一步学习建议
 
-完成本手册的所有课程后，建议继续学习：
+完成本手册的所有课程后，建议按官方 SDK Introduction 路线继续学习：
 
-1. **把 Runtime 能力接回更完整的小项目**：将 Scheduling + API + Storage 整合到应用骨架
-2. **工程化整理**：回顾所有模式，整理出可复用的模板
+**Advanced 主线：**
 
-### 推荐学习顺序
+1. **Session Management**：更细分的会话管理能力
+2. **Context Management**：上下文管理
+3. **State Management**：状态管理
+4. **Chat History**：聊天历史
+5. **Dependency Injection**：依赖注入
+6. **Hooks**：钩子
+7. **Skills**：技能
+8. **Reasoning**：推理
+9. **Multimodal**：多模态
 
-1. 把 Runtime 能力接回更完整的小项目
-2. 工程化整理
+**Production 主线：**
+
+10. **Guardrails**：防护栏
+11. **Human in the Loop**：人工介入
+12. **Evals**：评估
+13. **Tracing**：追踪
+14. 最后回到 `study_assistant_app` 做更完整的产品化整理
 
 ### 参考文档
 
