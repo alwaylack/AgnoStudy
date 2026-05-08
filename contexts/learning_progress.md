@@ -12,6 +12,7 @@
 - [examples/44_runtime_scheduling_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\44_runtime_scheduling_basics.py:1)
 - [examples/45_product_app_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\45_product_app_basics.py:1)
 - [examples/46_input_output_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\46_input_output_basics.py:1)
+- [examples/47_database_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\47_database_basics.py:1)
 
 ## 当前学习阶段
 
@@ -29,6 +30,7 @@
 - Scheduling
 - 回到更完整的小项目升级
 - 官方 SDK Introduction: Input & Output
+- 官方 SDK Introduction: Database
 
 ## 已完成课程
 
@@ -92,6 +94,7 @@
 ### 第五阶段：官方 SDK Introduction 对齐补课
 
 - `46_input_output_basics.py`
+- `47_database_basics.py`
 
 ## 当前已经掌握的重点
 
@@ -107,6 +110,7 @@
 - 能理解 `ScheduleManager` 与 `SchedulerTools` 的基本调度方式
 - 能把 Runtime 能力收拢到 [study_assistant_app/product_app.py](C:\Users\lenovo\Desktop\AgnoStudy\study_assistant_app\product_app.py:1) 这样的统一产品入口里
 - 能用 `input_schema / expected_output / output_schema / save_response_to_file` 组织一节完整的 Input & Output 示例
+- 能显式创建 `SqliteDb`，并用 `get_session / get_sessions` 观察 Agno 的数据库持久化结果
 
 ## 根据官方 SDK Introduction 调整后的计划
 
@@ -160,10 +164,10 @@
 - Tools
 - Scheduler
 - Input & Output
+- Database
 
 还没有按官方目录系统补齐的部分：
 
-- Database
 - Session Management 的细分能力
 - Context / State / Chat History
 - Dependency Injection / Hooks
@@ -174,32 +178,31 @@
 
 后续课程顺序调整为：
 
-1. `Database`
-2. `Session Management`
-3. `Context Management`
-4. `State Management`
-5. `Chat History`
-6. `Dependency Injection`
-7. `Hooks`
-8. `Skills`
-9. `Reasoning`
-10. `Multimodal`
-11. `Guardrails`
-12. `Human in the Loop`
-13. `Evals`
-14. `Tracing`
-15. 最后再回到 `study_assistant_app` 做更完整的产品化整理
+1. `Session Management`
+2. `Context Management`
+3. `State Management`
+4. `Chat History`
+5. `Dependency Injection`
+6. `Hooks`
+7. `Skills`
+8. `Reasoning`
+9. `Multimodal`
+10. `Guardrails`
+11. `Human in the Loop`
+12. `Evals`
+13. `Tracing`
+14. 最后再回到 `study_assistant_app` 做更完整的产品化整理
 
 如果只看最近三节课，建议就是：
 
-1. `Database`
-2. `Session Management`
-3. `Context Management`
+1. `Session Management`
+2. `Context Management`
+3. `State Management`
 
 ## 下次开始时建议先看
 
-- [examples/46_input_output_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\46_input_output_basics.py:1)
-- [examples/05_structured_output.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\05_structured_output.py:1)
+- [examples/47_database_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\47_database_basics.py:1)
+- [examples/41_workflow_sessions_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\41_workflow_sessions_basics.py:1)
 - [README.md](C:\Users\lenovo\Desktop\AgnoStudy\README.md:1)
 
 ## 版本与运行注意事项
@@ -209,6 +212,7 @@
 - 第 44 课已经按 `2.5.17` 改成使用 `ScheduleManager`
 - Runtime 相关课程需要 `agno[os]`、`agno[scheduler]`、`fastapi`、`uvicorn`
 - 第 46 课使用的 `input_schema / output_schema / save_response_to_file` 已确认在 `2.5.17` 可用
+- 第 47 课使用的 `SqliteDb / get_session / get_sessions` 已确认在 `2.5.17` 可用
 
 ## 参考文档
 
