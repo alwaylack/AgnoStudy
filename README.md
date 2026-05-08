@@ -3,26 +3,26 @@
 这是一个按学习节奏逐步搭建的 Agno 学习项目，目标有两件事：
 
 1. 从 Agno 官方核心能力开始，系统学习 `Agent / Tools / Knowledge / Team / Workflow / Runtime`
-2. 保留一套适合兼容 OpenAI 三方模型的本地封装方式，方便你边学边改
+2. 保留一套适合兼容 OpenAI 三方模型的本地封装方式，方便边学边改、边学边跑
 
 ## 当前状态
 
 当前最新课程：
 
-- [examples/44_runtime_scheduling_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\44_runtime_scheduling_basics.py:1)
+- [examples/46_input_output_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\46_input_output_basics.py:1)
 
 当前最适合的下一课：
 
-- `回到更完整的小项目升级`
+- `Database`
 
 当前主线已经覆盖到：
 
-- Agent / Tools / Knowledge / Team
-- Workflow 基础与组合模式
+- Agents / Tools / Knowledge / Teams
+- Workflow 基础、组合模式与长链路整合
 - Workflow Sessions
-- Runtime: Serve as API
-- Runtime: Storage + Interfaces
-- Scheduling
+- Runtime: Serve as API / Storage + Interfaces / Scheduling
+- 回到更完整的小项目升级
+- 官方 SDK Introduction: Input & Output
 
 ## 学习主线
 
@@ -66,14 +66,10 @@
 - [examples/23_team_shared_tools.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\23_team_shared_tools.py:1)
 - [examples/24_team_tasks_with_knowledge.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\24_team_tasks_with_knowledge.py:1)
 
-### 6. 阶段整合与项目骨架
+### 6. 项目骨架 / Workflow / Runtime
 
 - [examples/25_integrated_app_skeleton.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\25_integrated_app_skeleton.py:1)
 - [examples/26_real_project_structure_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\26_real_project_structure_basics.py:1)
-- [study_assistant_app](C:\Users\lenovo\Desktop\AgnoStudy\study_assistant_app)
-
-### 7. Workflow
-
 - [examples/27_workflow_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\27_workflow_basics.py:1)
 - [examples/28_workflow_grouped_steps.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\28_workflow_grouped_steps.py:1)
 - [examples/29_workflow_condition_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\29_workflow_condition_basics.py:1)
@@ -89,168 +85,133 @@
 - [examples/39_real_project_workflow_practice.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\39_real_project_workflow_practice.py:1)
 - [examples/40_long_chain_workflow_app.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\40_long_chain_workflow_app.py:1)
 - [examples/41_workflow_sessions_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\41_workflow_sessions_basics.py:1)
-
-### 8. Runtime
-
 - [examples/42_runtime_serve_api_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\42_runtime_serve_api_basics.py:1)
 - [examples/43_runtime_storage_interfaces_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\43_runtime_storage_interfaces_basics.py:1)
 - [examples/44_runtime_scheduling_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\44_runtime_scheduling_basics.py:1)
+- [examples/45_product_app_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\45_product_app_basics.py:1)
 
-## 重点课程说明
+### 7. 官方 SDK Introduction 对齐补课线
 
-### 第 41 课：Workflow Sessions
+- [examples/46_input_output_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\46_input_output_basics.py:1)
 
-重点学习：
+## 第 46 课：Input & Output
 
-- 给 `Workflow` 接上 `SqliteDb`
-- 开启 `add_workflow_history_to_steps=True`
-- 通过 `session_id` 复用同一个 Workflow 会话
-- 用 `session_state` 在多次运行之间共享状态
-
-### 第 42 课：Runtime / Serve as API
+这一课对齐官方 [SDK Introduction](https://docs.agno.com/sdk/introduction) 里的 `Input & Output`。
 
 重点学习：
 
-- 用 `AgentOS` 把现有 `agent / team / workflow` 暴露成服务
-- 通过 `agent_os.get_app()` 得到 FastAPI 应用
-- 理解 AgentOS 自动生成运行接口的思路
+- `input_schema`：约束输入结构
+- `expected_output`：补充输出预期
+- `output_schema`：约束返回结构
+- `save_response_to_file`：把结果自动保存到文件
 
-### 第 43 课：Runtime / Storage + Interfaces
-
-重点学习：
-
-- 用统一的 `db` 承载 Runtime 状态
-- 用“有凭据就注册，没有凭据就跳过”的方式演示接口接入
-- 用自定义 webhook 理解 one-off integration
-
-### 第 44 课：Scheduling
-
-重点学习：
-
-- 在 `AgentOS` 中开启 `scheduler=True`
-- 用 `ScheduleManager` 做启动即存在的 schedule 注册
-- 用 `SchedulerTools` 演示 agent-driven scheduling
-- 理解调度最终命中的仍然是 agent / workflow 运行端点
-
-## 环境变量
-
-在项目根目录准备 `.env`：
-
-```env
-OPENAI_BASE_URL="https://openrouter.ai/api/v1"
-OPENAI_API_KEY="your-api-key"
-OPENAI_MODEL_ID="openrouter/your-model"
-OPENAI_EMBEDDING_MODEL_ID="your-embedding-model"
-OPENAI_EMBEDDING_DIMENSIONS="1536"
-```
-
-如果你要体验 Runtime 接口能力，还可能会用到：
-
-```env
-AGNO_SLACK_BOT_TOKEN=""
-AGNO_SLACK_SIGNING_SECRET=""
-```
-
-## 安装依赖
-
-如果使用 `uv`：
+运行方式：
 
 ```bash
-uv sync
+python examples/46_input_output_basics.py
 ```
 
-如果使用 `pip`：
+结果文件会保存到：
 
-```bash
-pip install -e .
-```
+- [lesson_46_input_output_result.md](C:\Users\lenovo\Desktop\AgnoStudy\tmp\lesson_46_input_output_result.md:1)
 
-按能力补充的常见安装命令：
+## 官方 SDK Introduction 对齐后的下一阶段计划
 
-```bash
-uv pip install -U ddgs
-uv pip install -U chromadb
-uv pip install -U beautifulsoup4
-uv pip install -U pypdf reportlab
-uv pip install -U "agno[os]" fastapi uvicorn
-uv pip install -U "agno[scheduler]"
-```
+根据官方 [SDK Introduction](https://docs.agno.com/sdk/introduction)，Agno SDK 当前更清晰地分成三层学习路径：
 
-## 运行方式
+### Basics
 
-### 基础 Workflow 课程
+- Agents
+- Teams
+- Workflows
+- Input & Output
+- Database
+- Memory
+- Knowledge
+- Learning
+- Models
+- Tools
 
-```bash
-python examples/27_workflow_basics.py
-python examples/28_workflow_grouped_steps.py
-python examples/29_workflow_condition_basics.py
-python examples/30_workflow_parallel_basics.py
-python examples/31_workflow_loop_basics.py
-python examples/32_workflow_multi_pattern_basics.py
-python examples/33_workflow_team_basics.py
-python examples/34_workflow_knowledge_basics.py
-python examples/35_workflow_team_knowledge_basics.py
-python examples/36_learning_assistant_mini_workflow.py
-python examples/37_study_assistant_workflow_app.py
-python examples/38_workflow_router_orchestration.py
-python examples/39_real_project_workflow_practice.py
-python examples/40_long_chain_workflow_app.py
-python examples/41_workflow_sessions_basics.py
-```
+### Advanced
 
-### Runtime 课程
+- Session Management
+- Context Management
+- State Management
+- Chat History
+- Dependency Injection
+- Hooks
+- Skills
+- Reasoning
+- Multimodal
 
-先看说明：
+### Production
 
-```bash
-python examples/42_runtime_serve_api_basics.py
-python examples/43_runtime_storage_interfaces_basics.py
-python examples/44_runtime_scheduling_basics.py
-```
+- Guardrails
+- Human in the Loop
+- Evals
+- Tracing
+- Scheduler
 
-真正启动服务时用：
+## 我们当前和官方的差异
 
-```bash
-fastapi dev examples/42_runtime_serve_api_basics.py
-fastapi dev examples/43_runtime_storage_interfaces_basics.py
-fastapi dev examples/44_runtime_scheduling_basics.py
-```
+已经系统学过的部分：
 
-### 回顾项目骨架
+- Agents
+- Teams
+- Workflows
+- Memory / Learning
+- Knowledge
+- Models
+- Tools
+- Scheduler
+- Input & Output
 
-```bash
-python examples/25_integrated_app_skeleton.py
-python examples/26_real_project_structure_basics.py
-```
+还没有按官方目录系统补齐的部分：
+
+- Database
+- Session Management 的更细分能力
+- Context / State / Chat History
+- Dependency Injection / Hooks
+- Skills / Reasoning / Multimodal
+- Guardrails / Human in the Loop / Evals / Tracing
+
+## 接下来更合适的课程顺序
+
+下一阶段建议改成下面这条线：
+
+1. `Database`
+2. `Session Management`
+3. `Context Management`
+4. `State Management`
+5. `Chat History`
+6. `Dependency Injection`
+7. `Hooks`
+8. `Skills`
+9. `Reasoning`
+10. `Multimodal`
+11. `Guardrails`
+12. `Human in the Loop`
+13. `Evals`
+14. `Tracing`
+15. 最后再回到 `study_assistant_app` 做更完整的产品化整理
+
+如果按最近三节课来排，推荐就是：
+
+1. `Database`
+2. `Session Management`
+3. `Context Management`
 
 ## 当前版本注意事项
 
 - 当前本地版本是 `agno 2.5.17`
 - `Agent.__init__()` 不支持 `show_tool_calls`
 - 当前项目统一使用 `debug_mode=True`
-- 第 44 课已经按 `2.5.17` 改成使用 `ScheduleManager`，不再依赖不存在的 `register_schedule`
+- 第 44 课已经按 `2.5.17` 改成使用 `ScheduleManager`
+- 第 45 课继续沿用 `2.5.17` 兼容写法，把 `ScheduleManager`、`SchedulerTools` 和 `AgentOS` 统一收拢到产品入口
+- 第 46 课使用 `input_schema / output_schema / save_response_to_file`，这些参数已确认在 `2.5.17` 可用
 
-## 下一阶段建议
+## 参考文档
 
-下一阶段建议进入“回到更完整的小项目升级”，原因是：
-
-- 你已经把 SDK 主线学到了 `Workflow`
-- 你已经补了 `Workflow Sessions`
-- 你已经补了 `Runtime: Serve as API`
-- 你已经补了 `Runtime: Storage + Interfaces`
-- 你已经补了 `Scheduling`
-- 现在更适合把这些 Runtime 能力重新接回一个更完整的小项目结构
-
-推荐接下来的学习顺序：
-
-1. 回到更完整的小项目升级
-2. 再补一层更清晰的模块职责和运行入口
-3. 最后再做更复杂的工程化整理
-
-## 官方文档方向
-
-- [Agno 首页](https://docs.agno.com/)
+- [Agno SDK Introduction](https://docs.agno.com/sdk/introduction)
 - [Agno Sessions Overview](https://docs.agno.com/sessions/overview)
-- [Agno Workflows Overview](https://docs.agno.com/workflows/overview)
 - [Agno Runtime Overview](https://docs.agno.com/runtime/overview)
-- [Agno Scheduling](https://docs.agno.com/runtime/scheduling)
