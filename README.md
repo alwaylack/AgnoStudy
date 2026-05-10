@@ -9,11 +9,11 @@
 
 当前最新课程：
 
-- [examples/47_database_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\47_database_basics.py:1)
+- [examples/48_session_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\48_session_management_basics.py:1)
 
 当前最适合的下一课：
 
-- `Session Management`
+- `Context Management`
 
 当前主线已经覆盖到：
 
@@ -22,7 +22,7 @@
 - Workflow Sessions
 - Runtime: Serve as API / Storage + Interfaces / Scheduling
 - 回到更完整的小项目升级
-- 官方 SDK Introduction: Input & Output / Database
+- 官方 SDK Introduction: Input & Output / Database / Session Management
 
 ## 学习主线
 
@@ -94,27 +94,29 @@
 
 - [examples/46_input_output_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\46_input_output_basics.py:1)
 - [examples/47_database_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\47_database_basics.py:1)
+- [examples/48_session_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\48_session_management_basics.py:1)
 
-## 第 47 课：Database
+## 第 48 课：Session Management
 
-这一课对齐官方 [SDK Introduction](https://docs.agno.com/sdk/introduction) 里的 `Database`。
+这一课对齐官方 [SDK Introduction](https://docs.agno.com/sdk/introduction) 里的 `Session Management`。
 
 重点学习：
 
-- 显式创建 `SqliteDb`
-- 把 `db` 传给 Agent，而不是只在别的课程里顺带使用
-- 用 `get_session()` 读取当前 session 的持久化结果
-- 用 `get_sessions()` 查看数据库里已经保存的 session 列表
+- `set_session_name()`：主动给 session 命名
+- `update_session_state()`：手动写入 session 状态
+- `get_session_state()`：读取当前 session 状态
+- `get_session_messages()`：读取最近消息
+- `get_session()`：查看当前 session 的整体记录
 
 运行方式：
 
 ```bash
-python examples/47_database_basics.py
+python examples/48_session_management_basics.py
 ```
 
-这节课会输出数据库文件路径，默认保存在：
+数据库文件默认保存在：
 
-- [lesson_47_database.db](C:\Users\lenovo\Desktop\AgnoStudy\tmp\lesson_47_database.db:1)
+- [lesson_48_session_management.db](C:\Users\lenovo\Desktop\AgnoStudy\tmp\lesson_48_session_management.db:1)
 
 ## 官方 SDK Introduction 对齐后的下一阶段计划
 
@@ -167,10 +169,10 @@ python examples/47_database_basics.py
 - Scheduler
 - Input & Output
 - Database
+- Session Management
 
 还没有按官方目录系统补齐的部分：
 
-- Session Management 的更细分能力
 - Context / State / Chat History
 - Dependency Injection / Hooks
 - Skills / Reasoning / Multimodal
@@ -180,26 +182,25 @@ python examples/47_database_basics.py
 
 下一阶段建议改成下面这条线：
 
-1. `Session Management`
-2. `Context Management`
-3. `State Management`
-4. `Chat History`
-5. `Dependency Injection`
-6. `Hooks`
-7. `Skills`
-8. `Reasoning`
-9. `Multimodal`
-10. `Guardrails`
-11. `Human in the Loop`
-12. `Evals`
-13. `Tracing`
-14. 最后再回到 `study_assistant_app` 做更完整的产品化整理
+1. `Context Management`
+2. `State Management`
+3. `Chat History`
+4. `Dependency Injection`
+5. `Hooks`
+6. `Skills`
+7. `Reasoning`
+8. `Multimodal`
+9. `Guardrails`
+10. `Human in the Loop`
+11. `Evals`
+12. `Tracing`
+13. 最后再回到 `study_assistant_app` 做更完整的产品化整理
 
 如果按最近三节课来排，推荐就是：
 
-1. `Session Management`
-2. `Context Management`
-3. `State Management`
+1. `Context Management`
+2. `State Management`
+3. `Chat History`
 
 ## 当前版本注意事项
 
@@ -209,7 +210,8 @@ python examples/47_database_basics.py
 - 第 44 课已经按 `2.5.17` 改成使用 `ScheduleManager`
 - 第 45 课继续沿用 `2.5.17` 兼容写法，把 `ScheduleManager`、`SchedulerTools` 和 `AgentOS` 统一收拢到产品入口
 - 第 46 课使用 `input_schema / output_schema / save_response_to_file`
-- 第 47 课使用 `SqliteDb / get_session / get_sessions`，这些接口已确认在 `2.5.17` 可用
+- 第 47 课使用 `SqliteDb / get_session / get_sessions`
+- 第 48 课使用 `set_session_name / update_session_state / get_session_state / get_session_messages`，这些接口已确认在 `2.5.17` 可用
 
 ## 参考文档
 

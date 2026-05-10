@@ -81,9 +81,10 @@
 │  ├── 44 Scheduling                               ⭐⭐⭐⭐       │
 │  └── 45 产品应用基础                              ⭐⭐⭐⭐       │
 │                                                                 │
-│  第七阶段：官方 SDK Introduction（46-47）         ⭐⭐⭐⭐       │
+│  第七阶段：官方 SDK Introduction（46-48）         ⭐⭐⭐⭐       │
 │  ├── 46 Input & Output                            ⭐⭐⭐⭐       │
-│  └── 47 Database                                  ⭐⭐⭐⭐       │
+│  ├── 47 Database                                  ⭐⭐⭐⭐       │
+│  └── 48 Session Management                        ⭐⭐⭐⭐       │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -98,7 +99,7 @@
 - [第四阶段：集成与项目结构（25-26）](#第四阶段集成与项目结构25-26)
 - [第五阶段：Workflow（27-41）](#第五阶段workflow27-41)
 - [第六阶段：Runtime（42-45）](#第六阶段runtime42-45)
-- [第七阶段：官方 SDK Introduction（46-47）](#第七阶段官方-sdk-introduction46-47)
+- [第七阶段：官方 SDK Introduction（46-48）](#第七阶段官方-sdk-introduction46-48)
 - [附录](#附录)
 
 ---
@@ -4338,7 +4339,7 @@ fastapi dev examples/45_product_app_basics.py
 
 ---
 
-# 第七阶段：官方 SDK Introduction（46-47）
+# 第七阶段：官方 SDK Introduction（46-48）
 
 > 本阶段目标：对齐 Agno 官方 SDK Introduction 文档，补齐 Input & Output 和 Database 基础能力。
 
@@ -4502,6 +4503,99 @@ python examples/47_database_basics.py
 
 ---
 
+## 7.3 Session Management ⭐⭐⭐⭐
+
+**对应示例**：`examples/48_session_management_basics.py`
+
+### 学习目标
+
+- 掌握 `set_session_name()` 主动给 session 命名
+- 掌握 `update_session_state()` 手动写入 session 状态
+- 学会用 `get_session_state()` / `get_session_messages()` / `get_session()` 读取 session 信息
+- 理解 `add_session_state_to_context=True` 如何将状态注入 Agent 上下文
+
+### 核心概念
+
+**Session Management**：对齐官方 SDK Introduction 中的「Session Management」，不只是“自动保存对话”，而是主动管理 session 的名字、状态、消息和整体记录。
+
+### 核心代码
+
+```python
+from agno.db.sqlite import SqliteDb
+from models import OpenAIModel
+
+def run_session_management_basics_example() -> None:
+    model = OpenAIModel.from_env()
+    agent = model.create_agent(
+        name="Agno Session Management Agent",
+        db=SqliteDb(db_file=str(db_path)),
+        add_history_to_context=True,
+        num_history_runs=2,
+        instructions=["请根据当前会话上下文给出简洁、连续的回答。"],
+    )
+
+    user_id = "student@example.com"
+    session_id = "lesson_48_session_management_demo"
+
+    # 第 1 次运行：建立 session
+    agent.run(
+        "我已经学完了 Input & Output 和 Database，现在准备学习 Session Management。",
+        user_id=user_id,
+        session_id=session_id,
+    )
+
+    # 主动给 session 命名
+    agent.set_session_name(
+        session_id=session_id,
+        session_name="Agno Session Management 学习记录",
+    )
+
+    # 手动写入 session 状态
+    agent.update_session_state(
+        session_state_updates={
+            "completed_lessons": ["46_input_output_basics", "47_database_basics"],
+            "current_focus": "Session Management",
+            "preferred_style": "最小可运行示例",
+        },
+        session_id=session_id,
+    )
+
+    # 第 2 次运行：复用 session，并注入状态到上下文
+    agent.run(
+        "请结合我当前 session 的学习重点，告诉我最值得关注哪三个点。",
+        user_id=user_id,
+        session_id=session_id,
+        add_session_state_to_context=True,  # 注入 session state 到 Agent 上下文
+    )
+
+    # 读取 session 管理信息
+    session_name = agent.get_session_name(session_id=session_id)
+    session_state = agent.get_session_state(session_id=session_id)
+    session_messages = agent.get_session_messages(session_id=session_id, last_n_runs=2)
+    session_record = agent.get_session(session_id=session_id)
+```
+
+### 关键接口
+
+| 接口 | 说明 |
+|------|------|
+| `agent.set_session_name(session_id=..., session_name=...)` | 主动给 session 命名 |
+| `agent.update_session_state(session_state_updates={...}, session_id=...)` | 手动写入 session 状态 |
+| `agent.get_session_name(session_id=...)` | 读取 session 名称 |
+| `agent.get_session_state(session_id=...)` | 读取当前 session 状态 |
+| `agent.get_session_messages(session_id=..., last_n_runs=2)` | 读取最近消息 |
+| `agent.get_session(session_id=...)` | 查看 session 整体记录 |
+| `add_session_state_to_context=True` | 运行时将 session state 注入 Agent 上下文 |
+
+### 运行方式
+
+```bash
+python examples/48_session_management_basics.py
+# 数据库保存到 tmp/lesson_48_session_management.db
+```
+
+---
+
 # 附录
 
 ## A. 模型层封装
@@ -4610,7 +4704,7 @@ uv pip install -U ddgs chromadb beautifulsoup4 pypdf reportlab
 | 第四阶段 | 25-26 集成与项目结构 | ✅ 已完成 |
 | 第五阶段 | 27-41 Workflow | ✅ 已完成 |
 | 第六阶段 | 42-45 Runtime | ✅ 已完成 |
-| 第七阶段 | 46-47 SDK Introduction | ✅ 已完成 |
+| 第七阶段 | 46-48 SDK Introduction | ✅ 已完成 |
 
 ### 下一步学习建议
 
@@ -4618,23 +4712,22 @@ uv pip install -U ddgs chromadb beautifulsoup4 pypdf reportlab
 
 **Advanced 主线：**
 
-1. **Session Management**：更细分的会话管理能力
-2. **Context Management**：上下文管理
-3. **State Management**：状态管理
-4. **Chat History**：聊天历史
-5. **Dependency Injection**：依赖注入
-6. **Hooks**：钩子
-7. **Skills**：技能
-8. **Reasoning**：推理
-9. **Multimodal**：多模态
+1. **Context Management**：上下文管理
+2. **State Management**：状态管理
+3. **Chat History**：聊天历史
+4. **Dependency Injection**：依赖注入
+5. **Hooks**：钩子
+6. **Skills**：技能
+7. **Reasoning**：推理
+8. **Multimodal**：多模态
 
 **Production 主线：**
 
-10. **Guardrails**：防护栏
-11. **Human in the Loop**：人工介入
-12. **Evals**：评估
-13. **Tracing**：追踪
-14. 最后回到 `study_assistant_app` 做更完整的产品化整理
+9. **Guardrails**：防护栏
+10. **Human in the Loop**：人工介入
+11. **Evals**：评估
+12. **Tracing**：追踪
+13. 最后回到 `study_assistant_app` 做更完整的产品化整理
 
 ### 参考文档
 

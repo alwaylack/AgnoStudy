@@ -1,6 +1,6 @@
 # Agno 学习进度记录
 
-更新时间：2026-05-08
+更新时间：2026-05-10
 
 ## 当前停课点
 
@@ -13,6 +13,7 @@
 - [examples/45_product_app_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\45_product_app_basics.py:1)
 - [examples/46_input_output_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\46_input_output_basics.py:1)
 - [examples/47_database_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\47_database_basics.py:1)
+- [examples/48_session_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\48_session_management_basics.py:1)
 
 ## 当前学习阶段
 
@@ -31,6 +32,7 @@
 - 回到更完整的小项目升级
 - 官方 SDK Introduction: Input & Output
 - 官方 SDK Introduction: Database
+- 官方 SDK Introduction: Session Management
 
 ## 已完成课程
 
@@ -95,6 +97,7 @@
 
 - `46_input_output_basics.py`
 - `47_database_basics.py`
+- `48_session_management_basics.py`
 
 ## 当前已经掌握的重点
 
@@ -111,6 +114,7 @@
 - 能把 Runtime 能力收拢到 [study_assistant_app/product_app.py](C:\Users\lenovo\Desktop\AgnoStudy\study_assistant_app\product_app.py:1) 这样的统一产品入口里
 - 能用 `input_schema / expected_output / output_schema / save_response_to_file` 组织一节完整的 Input & Output 示例
 - 能显式创建 `SqliteDb`，并用 `get_session / get_sessions` 观察 Agno 的数据库持久化结果
+- 能主动管理 session 的名字、状态、消息与整体记录
 
 ## 根据官方 SDK Introduction 调整后的计划
 
@@ -165,10 +169,10 @@
 - Scheduler
 - Input & Output
 - Database
+- Session Management
 
 还没有按官方目录系统补齐的部分：
 
-- Session Management 的细分能力
 - Context / State / Chat History
 - Dependency Injection / Hooks
 - Skills / Reasoning / Multimodal
@@ -178,30 +182,29 @@
 
 后续课程顺序调整为：
 
-1. `Session Management`
-2. `Context Management`
-3. `State Management`
-4. `Chat History`
-5. `Dependency Injection`
-6. `Hooks`
-7. `Skills`
-8. `Reasoning`
-9. `Multimodal`
-10. `Guardrails`
-11. `Human in the Loop`
-12. `Evals`
-13. `Tracing`
-14. 最后再回到 `study_assistant_app` 做更完整的产品化整理
+1. `Context Management`
+2. `State Management`
+3. `Chat History`
+4. `Dependency Injection`
+5. `Hooks`
+6. `Skills`
+7. `Reasoning`
+8. `Multimodal`
+9. `Guardrails`
+10. `Human in the Loop`
+11. `Evals`
+12. `Tracing`
+13. 最后再回到 `study_assistant_app` 做更完整的产品化整理
 
 如果只看最近三节课，建议就是：
 
-1. `Session Management`
-2. `Context Management`
-3. `State Management`
+1. `Context Management`
+2. `State Management`
+3. `Chat History`
 
 ## 下次开始时建议先看
 
-- [examples/47_database_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\47_database_basics.py:1)
+- [examples/48_session_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\48_session_management_basics.py:1)
 - [examples/41_workflow_sessions_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\41_workflow_sessions_basics.py:1)
 - [README.md](C:\Users\lenovo\Desktop\AgnoStudy\README.md:1)
 
@@ -213,6 +216,7 @@
 - Runtime 相关课程需要 `agno[os]`、`agno[scheduler]`、`fastapi`、`uvicorn`
 - 第 46 课使用的 `input_schema / output_schema / save_response_to_file` 已确认在 `2.5.17` 可用
 - 第 47 课使用的 `SqliteDb / get_session / get_sessions` 已确认在 `2.5.17` 可用
+- 第 48 课使用的 `set_session_name / update_session_state / get_session_state / get_session_messages` 已确认在 `2.5.17` 可用
 
 ## 参考文档
 
