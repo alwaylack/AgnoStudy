@@ -86,6 +86,10 @@
 │  ├── 47 Database                                  ⭐⭐⭐⭐       │
 │  └── 48 Session Management                        ⭐⭐⭐⭐       │
 │                                                                 │
+│  第八阶段：SDK Advanced（49+）                   ⭐⭐⭐⭐       │
+│  ├── 49 Context Management                        ⭐⭐⭐⭐       │
+│  └── 50 State Management                          ⭐⭐⭐⭐       │
+│                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -100,6 +104,7 @@
 - [第五阶段：Workflow（27-41）](#第五阶段workflow27-41)
 - [第六阶段：Runtime（42-45）](#第六阶段runtime42-45)
 - [第七阶段：官方 SDK Introduction（46-48）](#第七阶段官方-sdk-introduction46-48)
+- [第八阶段：SDK Advanced（49+）](#第八阶段sdk-advanced49)
 - [附录](#附录)
 
 ---
@@ -4596,6 +4601,242 @@ python examples/48_session_management_basics.py
 
 ---
 
+# 第八阶段：SDK Advanced（49+）
+
+> 本阶段目标：对齐 Agno 官方 SDK Advanced 文档，补齐 Context Management、State Management、Chat History 等进阶能力。
+
+---
+
+## 8.1 Context Management ⭐⭐⭐⭐
+
+**对应示例**：`examples/49_context_management_basics.py`
+
+### 学习目标
+
+- 掌握 `add_history_to_context` 和 `num_history_runs` 控制历史消息注入
+- 理解多轮工具调用场景下的上下文清理策略
+- 学会用较小的 `num_history_runs` 实现上下文压缩
+- 学会通过 `response.metrics` 观察 token 消耗
+
+### 核心概念
+
+**Context Management**：对齐官方 SDK Advanced 中的「Context Management」，通过两个关键参数控制 Agent 的上下文窗口：① `add_history_to_context=True` 自动注入历史消息；② `num_history_runs` 控制注入多少轮历史。工具调用结果也会占用上下文空间，合理配置可以降低 token 消耗。
+
+### 两个演示场景
+
+| 场景 | 说明 |
+|------|------|
+| 多轮工具调用清理 | 5 轮对话，每轮调用不同工具，观察工具结果如何累积 |
+| 长对话压缩 | 11 轮对话，用 `num_history_runs=2` 模拟压缩效果 |
+
+### 核心代码
+
+```python
+from agno.db.sqlite import SqliteDb
+from models import OpenAIModel
+
+def run_context_management_basics_example() -> None:
+    db = SqliteDb(
+        db_file=str(db_path),
+        session_table="lesson_49_agent_sessions",
+    )
+    model = OpenAIModel.from_env()
+
+    # 场景一：多轮工具调用清理
+    agent = model.create_agent(
+        name="Tool Cleanup Agent",
+        db=db,
+        tools=[search_topic, analyze_content, generate_summary],
+        add_history_to_context=True,  # 自动注入历史消息
+        num_history_runs=3,           # 注入最近 3 轮
+        instructions=[...],
+    )
+
+    # 5 轮对话，每轮调用不同工具
+    agent.run("请帮我搜索一下什么是 Agent。", user_id=user_id, session_id=session_id)
+    agent.run("请帮我搜索一下什么是 Memory。", ...)
+    agent.run("请帮我搜索一下什么是 Tools。", ...)
+    agent.run("请帮我分析一下之前搜索的三个概念之间的关系。", ...)
+    agent.run("请帮我总结一下今天学习的 Agno 核心概念。", ...)
+
+    # 场景二：长对话压缩
+    agent_compressed = model.create_agent(
+        name="Compression Agent",
+        db=db,
+        tools=[get_learning_path],
+        add_history_to_context=True,
+        num_history_runs=2,  # 只保留最近 2 轮，模拟压缩效果
+        instructions=[...],
+    )
+
+    # 11 轮长对话
+    conversations = [
+        "我刚开始学习 Agno，应该从哪里开始？",
+        "我已经学完了 Agent 基础，下一步学什么？",
+        "Tools 和 Memory 哪个更重要？",
+        "我想学习多智能体协作，有什么建议？",
+        "Team 和 Workflow 有什么区别？",
+        "Runtime 是做什么的？",
+        "我想把 Agent 部署到生产环境，需要学什么？",
+        "Guardrails 和 Evals 是什么？",
+        "Human in the Loop 怎么实现？",
+        "Tracing 和监控怎么做？",
+        "我之前问的第一个问题是什么？",  # 测试压缩后的记忆能力
+    ]
+    for message in conversations:
+        agent_compressed.run(message, user_id=user_id, session_id=session_id)
+```
+
+### Token 消耗观察
+
+```python
+# 通过 response.metrics 观察 token 消耗
+response = agent.run("...", ...)
+print(f"Input tokens: {response.metrics.input_tokens:,}")
+print(f"Output tokens: {response.metrics.output_tokens:,}")
+print(f"Total tokens: {response.metrics.total_tokens:,}")
+```
+
+### 关键观察点
+
+| 观察点 | 说明 |
+|--------|------|
+| `num_history_runs` 越大 | 上下文越完整，但 token 消耗越高 |
+| `num_history_runs` 越小 | 上下文越精简，token 消耗越低，但可能丢失早期信息 |
+| 工具调用结果 | 也会占用上下文空间，多次工具调用会累积 |
+| 压缩效果 | 小的 `num_history_runs` 可以模拟长对话压缩 |
+
+### 运行方式
+
+```bash
+python examples/49_context_management_basics.py
+# 数据库保存到 tmp/lesson_49_context_management.db
+```
+
+---
+
+## 8.2 State Management ⭐⭐⭐⭐
+
+**对应示例**：`examples/50_state_management_basics.py`
+
+### 学习目标
+
+- 掌握 `update_session_state()` 手动管理状态
+- 掌握 `enable_agentic_state=True` 让 agent 自动修改状态
+- 理解 `add_session_state_to_context=True` 状态注入对响应质量的影响
+- 学会 `session_state={...}` 在 agent 创建时初始化状态
+
+### 核心概念
+
+**State Management**：对齐官方 SDK Advanced 中的「State Management」，通过三种方式管理 Agent 的 session state：① 手动 `update_session_state()`；② Agent 自动管理 `enable_agentic_state=True`；③ 状态注入 `add_session_state_to_context=True`。
+
+### 三个演示场景
+
+| 场景 | 说明 | 关键参数 |
+|------|------|----------|
+| 手动管理状态 | 用 `update_session_state()` 增删改任务 | `update_session_state()` + `get_session_state()` |
+| Agent 自动管理 | Agent 根据对话自动创建、更新、归档任务 | `enable_agentic_state=True` |
+| 状态注入对比 | 对比有无状态注入时 agent 响应的差异 | `add_session_state_to_context=True` vs `False` |
+
+### 核心代码
+
+```python
+from agno.db.sqlite import SqliteDb
+from models import OpenAIModel
+
+# 场景一：手动管理状态
+agent = model.create_agent(
+    name="Manual State Agent",
+    db=db,
+    add_history_to_context=True,
+    num_history_runs=2,
+)
+
+# 初始化状态
+agent.update_session_state(
+    session_state_updates={
+        "tasks": [
+            {"id": "task_001", "title": "学习 Agent 基础", "status": "completed", "priority": "high"},
+            {"id": "task_002", "title": "学习 Tools 使用", "status": "in_progress", "priority": "high"},
+        ],
+        "project": "Agno 学习项目",
+    },
+    session_id=session_id,
+)
+
+# 读取状态
+state = agent.get_session_state(session_id=session_id)
+
+# 场景二：Agent 自动管理状态
+agent_agentic = model.create_agent(
+    name="Agentic State Agent",
+    db=db,
+    session_state={"tasks": [], "project": "学习计划"},  # 初始状态
+    add_session_state_to_context=True,                     # 注入状态到上下文
+    enable_agentic_state=True,                             # Agent 自动管理状态
+    instructions=[
+        "当用户提到新任务时，请自动添加到任务列表。",
+        "当用户说完成某任务时，请自动更新任务状态。",
+    ],
+)
+
+# Agent 自动创建任务
+agent_agentic.run(
+    "我今天需要完成三件事：学习 Context Management、复习 Session 管理、准备 State Management。",
+    user_id=user_id, session_id=session_id,
+)
+
+# Agent 自动更新任务状态
+agent_agentic.run(
+    "我已经完成了 Context Management 的学习。",
+    user_id=user_id, session_id=session_id,
+)
+
+# Agent 调整任务优先级
+agent_agentic.run(
+    "State Management 课程很紧急，请把它标记为高优先级。",
+    user_id=user_id, session_id=session_id,
+)
+
+# 场景三：状态注入对比
+agent_with_state = model.create_agent(
+    session_state={"tasks": [...], "current_focus": "Agno"},
+    add_session_state_to_context=True,  # 注入状态
+)
+agent_without_state = model.create_agent(
+    session_state={"tasks": [...], "current_focus": "Agno"},
+    add_session_state_to_context=False,  # 不注入状态
+)
+# 对比：注入状态的 agent 能基于任务进度给出个性化建议
+```
+
+### 关键参数
+
+| 参数 | 说明 |
+|------|------|
+| `session_state={...}` | 在 agent 创建时初始化状态 |
+| `update_session_state()` | 手动更新状态 |
+| `get_session_state()` | 读取当前状态 |
+| `enable_agentic_state=True` | 让 agent 自动管理状态（创建/更新/归档） |
+| `add_session_state_to_context=True` | 将状态注入 agent 上下文，agent 能“看到”当前状态 |
+
+### 关键观察点
+
+| 观察点 | 说明 |
+|--------|------|
+| 手动 vs 自动 | `update_session_state()` 手动控制，`enable_agentic_state` 让 agent 自动管理 |
+| 状态注入 | `add_session_state_to_context=True` 让 agent 能看到当前状态，响应更个性化 |
+| 无状态注入 | agent 无法感知当前状态，回答更通用 |
+
+### 运行方式
+
+```bash
+python examples/50_state_management_basics.py
+# 数据库保存到 tmp/lesson_50_state_management.db
+```
+
+---
+
 # 附录
 
 ## A. 模型层封装
@@ -4705,29 +4946,28 @@ uv pip install -U ddgs chromadb beautifulsoup4 pypdf reportlab
 | 第五阶段 | 27-41 Workflow | ✅ 已完成 |
 | 第六阶段 | 42-45 Runtime | ✅ 已完成 |
 | 第七阶段 | 46-48 SDK Introduction | ✅ 已完成 |
+| 第八阶段 | 49-50 SDK Advanced | ✅ 已完成 |
 
 ### 下一步学习建议
 
-完成本手册的所有课程后，建议按官方 SDK Introduction 路线继续学习：
+完成本手册的所有课程后，建议按官方 SDK Advanced 路线继续学习：
 
 **Advanced 主线：**
 
-1. **Context Management**：上下文管理
-2. **State Management**：状态管理
-3. **Chat History**：聊天历史
-4. **Dependency Injection**：依赖注入
-5. **Hooks**：钩子
-6. **Skills**：技能
-7. **Reasoning**：推理
-8. **Multimodal**：多模态
+1. **Chat History**：聊天历史
+2. **Dependency Injection**：依赖注入
+3. **Hooks**：钩子
+4. **Skills**：技能
+5. **Reasoning**：推理
+6. **Multimodal**：多模态
 
 **Production 主线：**
 
-9. **Guardrails**：防护栏
-10. **Human in the Loop**：人工介入
-11. **Evals**：评估
-12. **Tracing**：追踪
-13. 最后回到 `study_assistant_app` 做更完整的产品化整理
+7. **Guardrails**：防护栏
+8. **Human in the Loop**：人工介入
+9. **Evals**：评估
+10. **Tracing**：追踪
+11. 最后回到 `study_assistant_app` 做更完整的产品化整理
 
 ### 参考文档
 

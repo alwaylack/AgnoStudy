@@ -9,11 +9,11 @@
 
 当前最新课程：
 
-- [examples/48_session_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\48_session_management_basics.py:1)
+- [examples/50_state_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\50_state_management_basics.py:1)
 
 当前最适合的下一课：
 
-- `Context Management`
+- `Chat History`
 
 当前主线已经覆盖到：
 
@@ -23,6 +23,7 @@
 - Runtime: Serve as API / Storage + Interfaces / Scheduling
 - 回到更完整的小项目升级
 - 官方 SDK Introduction: Input & Output / Database / Session Management
+- 官方 SDK Advanced: Context Management / State Management
 
 ## 学习主线
 
@@ -96,6 +97,11 @@
 - [examples/47_database_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\47_database_basics.py:1)
 - [examples/48_session_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\48_session_management_basics.py:1)
 
+### 8. 官方 SDK Advanced 对齐线
+
+- [examples/49_context_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\49_context_management_basics.py:1)
+- [examples/50_state_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\50_state_management_basics.py:1)
+
 ## 第 48 课：Session Management
 
 这一课对齐官方 [SDK Introduction](https://docs.agno.com/sdk/introduction) 里的 `Session Management`。
@@ -117,6 +123,49 @@ python examples/48_session_management_basics.py
 数据库文件默认保存在：
 
 - [lesson_48_session_management.db](C:\Users\lenovo\Desktop\AgnoStudy\tmp\lesson_48_session_management.db:1)
+
+## 第 49 课：Context Management
+
+这一课对齐官方 [SDK Advanced](https://docs.agno.com/sdk/introduction) 里的 `Context Management`。
+
+重点学习：
+
+- `add_history_to_context`：自动注入历史消息到上下文
+- `num_history_runs`：控制注入的历史轮次数量
+- 多轮工具调用场景下的上下文清理策略
+- 长对话场景下的上下文压缩策略
+- 如何观察和对比 token 消耗
+
+运行方式：
+
+```bash
+python examples/49_context_management_basics.py
+```
+
+数据库文件默认保存在：
+
+- [lesson_49_context_management.db](C:\Users\lenovo\Desktop\AgnoStudy\tmp\lesson_49_context_management.db:1)
+
+## 第 50 课：State Management
+
+这一课对齐官方 [SDK Advanced](https://docs.agno.com/sdk/introduction) 里的 `State Management`。
+
+重点学习：
+
+- `update_session_state()`：手动管理结构化的会话状态
+- `enable_agentic_state=True`：让 agent 自动根据对话内容修改状态
+- `add_session_state_to_context=True`：将状态注入到 agent 的上下文
+- 任务管理场景下的状态管理实践
+
+运行方式：
+
+```bash
+python examples/50_state_management_basics.py
+```
+
+数据库文件默认保存在：
+
+- [lesson_50_state_management.db](C:\Users\lenovo\Desktop\AgnoStudy\tmp\lesson_50_state_management.db:1)
 
 ## 官方 SDK Introduction 对齐后的下一阶段计划
 
@@ -170,10 +219,12 @@ python examples/48_session_management_basics.py
 - Input & Output
 - Database
 - Session Management
+- Context Management
+- State Management
 
 还没有按官方目录系统补齐的部分：
 
-- Context / State / Chat History
+- Chat History
 - Dependency Injection / Hooks
 - Skills / Reasoning / Multimodal
 - Guardrails / Human in the Loop / Evals / Tracing
@@ -182,8 +233,8 @@ python examples/48_session_management_basics.py
 
 下一阶段建议改成下面这条线：
 
-1. `Context Management`
-2. `State Management`
+1. ~~`Context Management`~~ ✅ 已完成
+2. ~~`State Management`~~ ✅ 已完成
 3. `Chat History`
 4. `Dependency Injection`
 5. `Hooks`
@@ -198,8 +249,8 @@ python examples/48_session_management_basics.py
 
 如果按最近三节课来排，推荐就是：
 
-1. `Context Management`
-2. `State Management`
+1. ~~`Context Management`~~ ✅ 已完成
+2. ~~`State Management`~~ ✅ 已完成
 3. `Chat History`
 
 ## 当前版本注意事项
@@ -212,9 +263,13 @@ python examples/48_session_management_basics.py
 - 第 46 课使用 `input_schema / output_schema / save_response_to_file`
 - 第 47 课使用 `SqliteDb / get_session / get_sessions`
 - 第 48 课使用 `set_session_name / update_session_state / get_session_state / get_session_messages`，这些接口已确认在 `2.5.17` 可用
+- 第 49 课使用 `add_history_to_context / num_history_runs / get_session_messages`，这些接口已确认在 `2.5.17` 可用
+- 第 50 课使用 `enable_agentic_state / add_session_state_to_context`，这些接口已确认在 `2.5.17` 可用
 
 ## 参考文档
 
 - [Agno SDK Introduction](https://docs.agno.com/sdk/introduction)
 - [Agno Sessions Overview](https://docs.agno.com/sessions/overview)
 - [Agno Runtime Overview](https://docs.agno.com/runtime/overview)
+- [Agno Context Management](https://docs.agno.com/context/overview)
+- [Agno Chat History](https://docs.agno.com/database/chat-history)

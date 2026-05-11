@@ -14,6 +14,8 @@
 - [examples/46_input_output_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\46_input_output_basics.py:1)
 - [examples/47_database_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\47_database_basics.py:1)
 - [examples/48_session_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\48_session_management_basics.py:1)
+- [examples/49_context_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\49_context_management_basics.py:1)
+- [examples/50_state_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\50_state_management_basics.py:1)
 
 ## 当前学习阶段
 
@@ -33,6 +35,8 @@
 - 官方 SDK Introduction: Input & Output
 - 官方 SDK Introduction: Database
 - 官方 SDK Introduction: Session Management
+- 官方 SDK Advanced: Context Management
+- 官方 SDK Advanced: State Management
 
 ## 已完成课程
 
@@ -99,6 +103,11 @@
 - `47_database_basics.py`
 - `48_session_management_basics.py`
 
+### 第六阶段：官方 SDK Advanced 对齐
+
+- `49_context_management_basics.py`
+- `50_state_management_basics.py`
+
 ## 当前已经掌握的重点
 
 - 能用统一封装接入兼容 OpenAI 的三方模型与嵌入模型
@@ -115,6 +124,11 @@
 - 能用 `input_schema / expected_output / output_schema / save_response_to_file` 组织一节完整的 Input & Output 示例
 - 能显式创建 `SqliteDb`，并用 `get_session / get_sessions` 观察 Agno 的数据库持久化结果
 - 能主动管理 session 的名字、状态、消息与整体记录
+- 能用 `add_history_to_context` 和 `num_history_runs` 控制历史消息注入
+- 能理解上下文管理的核心概念：工具调用清理、长对话压缩
+- 能用 `update_session_state()` 手动管理结构化状态
+- 能用 `enable_agentic_state=True` 让 agent 自动修改状态
+- 能用 `add_session_state_to_context=True` 将状态注入上下文
 
 ## 根据官方 SDK Introduction 调整后的计划
 
@@ -182,8 +196,8 @@
 
 后续课程顺序调整为：
 
-1. `Context Management`
-2. `State Management`
+1. ~~`Context Management`~~ ✅ 已完成
+2. ~~`State Management`~~ ✅ 已完成
 3. `Chat History`
 4. `Dependency Injection`
 5. `Hooks`
@@ -198,14 +212,15 @@
 
 如果只看最近三节课，建议就是：
 
-1. `Context Management`
-2. `State Management`
+1. ~~`Context Management`~~ ✅ 已完成
+2. ~~`State Management`~~ ✅ 已完成
 3. `Chat History`
 
 ## 下次开始时建议先看
 
+- [examples/50_state_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\50_state_management_basics.py:1)
+- [examples/49_context_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\49_context_management_basics.py:1)
 - [examples/48_session_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\48_session_management_basics.py:1)
-- [examples/41_workflow_sessions_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\41_workflow_sessions_basics.py:1)
 - [README.md](C:\Users\lenovo\Desktop\AgnoStudy\README.md:1)
 
 ## 版本与运行注意事项
@@ -217,9 +232,13 @@
 - 第 46 课使用的 `input_schema / output_schema / save_response_to_file` 已确认在 `2.5.17` 可用
 - 第 47 课使用的 `SqliteDb / get_session / get_sessions` 已确认在 `2.5.17` 可用
 - 第 48 课使用的 `set_session_name / update_session_state / get_session_state / get_session_messages` 已确认在 `2.5.17` 可用
+- 第 49 课使用的 `add_history_to_context / num_history_runs / get_session_messages` 已确认在 `2.5.17` 可用
+- 第 50 课使用的 `enable_agentic_state / add_session_state_to_context` 已确认在 `2.5.17` 可用
 
 ## 参考文档
 
 - [Agno SDK Introduction](https://docs.agno.com/sdk/introduction)
 - [Agno Sessions Overview](https://docs.agno.com/sessions/overview)
 - [Agno Runtime Overview](https://docs.agno.com/runtime/overview)
+- [Agno Context Management](https://docs.agno.com/context/overview)
+- [Agno Chat History](https://docs.agno.com/database/chat-history)
