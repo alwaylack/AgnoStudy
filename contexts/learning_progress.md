@@ -1,6 +1,6 @@
 # Agno 学习进度记录
 
-更新时间：2026-05-10
+更新时间：2026-05-12
 
 ## 当前停课点
 
@@ -16,6 +16,8 @@
 - [examples/48_session_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\48_session_management_basics.py:1)
 - [examples/49_context_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\49_context_management_basics.py:1)
 - [examples/50_state_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\50_state_management_basics.py:1)
+- [examples/51_chat_history_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\51_chat_history_basics.py:1)
+- [examples/52_dependency_injection_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\52_dependency_injection_basics.py:1)
 
 ## 当前学习阶段
 
@@ -37,6 +39,8 @@
 - 官方 SDK Introduction: Session Management
 - 官方 SDK Advanced: Context Management
 - 官方 SDK Advanced: State Management
+- 官方 SDK Advanced: Chat History
+- 官方 SDK Advanced: Dependency Injection
 
 ## 已完成课程
 
@@ -107,6 +111,8 @@
 
 - `49_context_management_basics.py`
 - `50_state_management_basics.py`
+- `51_chat_history_basics.py`
+- `52_dependency_injection_basics.py`
 
 ## 当前已经掌握的重点
 
@@ -129,6 +135,10 @@
 - 能用 `update_session_state()` 手动管理结构化状态
 - 能用 `enable_agentic_state=True` 让 agent 自动修改状态
 - 能用 `add_session_state_to_context=True` 将状态注入上下文
+- 能用 `read_chat_history` 和 `search_session_history` 让 Agent 主动读取和搜索聊天历史
+- 能用 `get_chat_history()` 和 `get_last_run_output()` 程序化读取历史记录
+- 能用 `dependencies / add_dependencies_to_context` 给 Agent 和 Team 注入运行时业务上下文
+- 能在工具函数里通过 `RunContext.dependencies` 读取同一份依赖
 
 ## 根据官方 SDK Introduction 调整后的计划
 
@@ -184,11 +194,14 @@
 - Input & Output
 - Database
 - Session Management
+- Context Management
+- State Management
+- Chat History
+- Dependency Injection
 
 还没有按官方目录系统补齐的部分：
 
-- Context / State / Chat History
-- Dependency Injection / Hooks
+- Hooks
 - Skills / Reasoning / Multimodal
 - Guardrails / Human in the Loop / Evals / Tracing
 
@@ -198,8 +211,8 @@
 
 1. ~~`Context Management`~~ ✅ 已完成
 2. ~~`State Management`~~ ✅ 已完成
-3. `Chat History`
-4. `Dependency Injection`
+3. ~~`Chat History`~~ ✅ 已完成
+4. ~~`Dependency Injection`~~ ✅ 已完成
 5. `Hooks`
 6. `Skills`
 7. `Reasoning`
@@ -212,15 +225,16 @@
 
 如果只看最近三节课，建议就是：
 
-1. ~~`Context Management`~~ ✅ 已完成
-2. ~~`State Management`~~ ✅ 已完成
-3. `Chat History`
+1. ~~`State Management`~~ ✅ 已完成
+2. ~~`Chat History`~~ ✅ 已完成
+3. ~~`Dependency Injection`~~ ✅ 已完成
+4. `Hooks`
 
 ## 下次开始时建议先看
 
+- [examples/52_dependency_injection_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\52_dependency_injection_basics.py:1)
+- [examples/51_chat_history_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\51_chat_history_basics.py:1)
 - [examples/50_state_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\50_state_management_basics.py:1)
-- [examples/49_context_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\49_context_management_basics.py:1)
-- [examples/48_session_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\48_session_management_basics.py:1)
 - [README.md](C:\Users\lenovo\Desktop\AgnoStudy\README.md:1)
 
 ## 版本与运行注意事项
@@ -234,6 +248,8 @@
 - 第 48 课使用的 `set_session_name / update_session_state / get_session_state / get_session_messages` 已确认在 `2.5.17` 可用
 - 第 49 课使用的 `add_history_to_context / num_history_runs / get_session_messages` 已确认在 `2.5.17` 可用
 - 第 50 课使用的 `enable_agentic_state / add_session_state_to_context` 已确认在 `2.5.17` 可用
+- 第 51 课使用的 `read_chat_history / search_session_history / get_chat_history / get_last_run_output` 已确认在 `2.5.17` 可用
+- 第 52 课使用的 `dependencies / add_dependencies_to_context / RunContext.dependencies` 已确认在 `2.5.17` 可用
 
 ## 参考文档
 
@@ -242,3 +258,4 @@
 - [Agno Runtime Overview](https://docs.agno.com/runtime/overview)
 - [Agno Context Management](https://docs.agno.com/context/overview)
 - [Agno Chat History](https://docs.agno.com/database/chat-history)
+- [Agno Dependency Injection](https://docs.agno.com/context/dependencies/overview)

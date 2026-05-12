@@ -9,11 +9,11 @@
 
 当前最新课程：
 
-- [examples/50_state_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\50_state_management_basics.py:1)
+- [examples/52_dependency_injection_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\52_dependency_injection_basics.py:1)
 
 当前最适合的下一课：
 
-- `Chat History`
+- `Hooks`
 
 当前主线已经覆盖到：
 
@@ -23,7 +23,7 @@
 - Runtime: Serve as API / Storage + Interfaces / Scheduling
 - 回到更完整的小项目升级
 - 官方 SDK Introduction: Input & Output / Database / Session Management
-- 官方 SDK Advanced: Context Management / State Management
+- 官方 SDK Advanced: Context Management / State Management / Chat History / Dependency Injection
 
 ## 学习主线
 
@@ -101,6 +101,8 @@
 
 - [examples/49_context_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\49_context_management_basics.py:1)
 - [examples/50_state_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\50_state_management_basics.py:1)
+- [examples/51_chat_history_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\51_chat_history_basics.py:1)
+- [examples/52_dependency_injection_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\52_dependency_injection_basics.py:1)
 
 ## 第 48 课：Session Management
 
@@ -167,6 +169,46 @@ python examples/50_state_management_basics.py
 
 - [lesson_50_state_management.db](C:\Users\lenovo\Desktop\AgnoStudy\tmp\lesson_50_state_management.db:1)
 
+## 第 51 课：Chat History
+
+这一课对齐官方 [Chat History](https://docs.agno.com/database/chat-history)。
+
+重点学习：
+
+- `add_history_to_context`：把最近历史自动注入上下文
+- `read_chat_history`：让 Agent 按需读取当前聊天历史
+- `search_session_history`：让 Agent 搜索过去 session
+- `get_chat_history()`：程序化读取聊天历史
+- `get_last_run_output()`：读取最后一次运行结果
+
+运行方式：
+
+```bash
+python examples/51_chat_history_basics.py
+```
+
+数据库文件默认保存在：
+
+- [lesson_51_chat_history.db](C:\Users\lenovo\Desktop\AgnoStudy\tmp\lesson_51_chat_history.db:1)
+
+## 第 52 课：Dependency Injection
+
+这一课对齐官方 [Dependency Injection](https://docs.agno.com/context/dependencies/overview)。
+
+重点学习：
+
+- `dependencies`：给 Agent / Team 注入运行时业务上下文
+- callable dependency：在运行前动态解析最新上下文
+- `add_dependencies_to_context`：把依赖作为 additional context 注入给模型
+- `RunContext.dependencies`：让工具函数读取同一份依赖
+- Team 级 dependencies：让团队协调者和成员共享课程上下文
+
+运行方式：
+
+```bash
+python examples/52_dependency_injection_basics.py
+```
+
 ## 官方 SDK Introduction 对齐后的下一阶段计划
 
 根据官方 [SDK Introduction](https://docs.agno.com/sdk/introduction)，Agno SDK 当前更清晰地分成三层学习路径：
@@ -221,11 +263,12 @@ python examples/50_state_management_basics.py
 - Session Management
 - Context Management
 - State Management
+- Chat History
+- Dependency Injection
 
 还没有按官方目录系统补齐的部分：
 
-- Chat History
-- Dependency Injection / Hooks
+- Hooks
 - Skills / Reasoning / Multimodal
 - Guardrails / Human in the Loop / Evals / Tracing
 
@@ -235,8 +278,8 @@ python examples/50_state_management_basics.py
 
 1. ~~`Context Management`~~ ✅ 已完成
 2. ~~`State Management`~~ ✅ 已完成
-3. `Chat History`
-4. `Dependency Injection`
+3. ~~`Chat History`~~ ✅ 已完成
+4. ~~`Dependency Injection`~~ ✅ 已完成
 5. `Hooks`
 6. `Skills`
 7. `Reasoning`
@@ -251,7 +294,9 @@ python examples/50_state_management_basics.py
 
 1. ~~`Context Management`~~ ✅ 已完成
 2. ~~`State Management`~~ ✅ 已完成
-3. `Chat History`
+3. ~~`Chat History`~~ ✅ 已完成
+4. ~~`Dependency Injection`~~ ✅ 已完成
+5. `Hooks`
 
 ## 当前版本注意事项
 
@@ -265,6 +310,8 @@ python examples/50_state_management_basics.py
 - 第 48 课使用 `set_session_name / update_session_state / get_session_state / get_session_messages`，这些接口已确认在 `2.5.17` 可用
 - 第 49 课使用 `add_history_to_context / num_history_runs / get_session_messages`，这些接口已确认在 `2.5.17` 可用
 - 第 50 课使用 `enable_agentic_state / add_session_state_to_context`，这些接口已确认在 `2.5.17` 可用
+- 第 51 课使用 `read_chat_history / search_session_history / get_chat_history / get_last_run_output`，这些接口已确认在 `2.5.17` 可用
+- 第 52 课使用 `dependencies / add_dependencies_to_context / RunContext.dependencies`，这些接口已确认在 `2.5.17` 可用
 
 ## 参考文档
 
@@ -273,3 +320,4 @@ python examples/50_state_management_basics.py
 - [Agno Runtime Overview](https://docs.agno.com/runtime/overview)
 - [Agno Context Management](https://docs.agno.com/context/overview)
 - [Agno Chat History](https://docs.agno.com/database/chat-history)
+- [Agno Dependency Injection](https://docs.agno.com/context/dependencies/overview)

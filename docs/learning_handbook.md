@@ -86,9 +86,11 @@
 │  ├── 47 Database                                  ⭐⭐⭐⭐       │
 │  └── 48 Session Management                        ⭐⭐⭐⭐       │
 │                                                                 │
-│  第八阶段：SDK Advanced（49+）                   ⭐⭐⭐⭐       │
+│  第八阶段：SDK Advanced（49-52）                  ⭐⭐⭐⭐       │
 │  ├── 49 Context Management                        ⭐⭐⭐⭐       │
-│  └── 50 State Management                          ⭐⭐⭐⭐       │
+│  ├── 50 State Management                          ⭐⭐⭐⭐       │
+│  ├── 51 Chat History                              ⭐⭐⭐⭐       │
+│  └── 52 Dependency Injection                      ⭐⭐⭐⭐       │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -104,7 +106,7 @@
 - [第五阶段：Workflow（27-41）](#第五阶段workflow27-41)
 - [第六阶段：Runtime（42-45）](#第六阶段runtime42-45)
 - [第七阶段：官方 SDK Introduction（46-48）](#第七阶段官方-sdk-introduction46-48)
-- [第八阶段：SDK Advanced（49+）](#第八阶段sdk-advanced49)
+- [第八阶段：SDK Advanced（49-52）](#第八阶段sdk-advanced49-52)
 - [附录](#附录)
 
 ---
@@ -4601,9 +4603,9 @@ python examples/48_session_management_basics.py
 
 ---
 
-# 第八阶段：SDK Advanced（49+）
+# 第八阶段：SDK Advanced（49-52）
 
-> 本阶段目标：对齐 Agno 官方 SDK Advanced 文档，补齐 Context Management、State Management、Chat History 等进阶能力。
+> 本阶段目标：对齐 Agno 官方 SDK Advanced 文档，补齐 Context Management、State Management、Chat History、Dependency Injection 等进阶能力。
 
 ---
 
@@ -4837,6 +4839,225 @@ python examples/50_state_management_basics.py
 
 ---
 
+## 8.3 Chat History ⭐⭐⭐⭐
+
+**对应示例**：`examples/51_chat_history_basics.py`
+
+### 学习目标
+
+- 掌握 `add_history_to_context` 自动注入最近历史到上下文
+- 掌握 `read_chat_history` 让 Agent 按需读取当前聊天历史
+- 掌握 `search_session_history` 让 Agent 搜索过去 session
+- 学会用 `get_chat_history()` 程序化读取聊天历史
+- 学会用 `get_last_run_output()` 读取最后一次运行结果
+
+### 核心概念
+
+**Chat History**：对齐官方 SDK Advanced 中的「Chat History」，让 Agent 能够主动读取和搜索聊天历史，而不仅仅是被动接收注入的历史消息。核心区别在于：`add_history_to_context` 是自动注入，`read_chat_history` 和 `search_session_history` 是让 Agent 按需主动查询。
+
+### 五个演示场景
+
+| 场景 | 说明 | 关键参数 |
+|------|------|----------|
+| 自动注入历史 | 同一 session 内自动注入最近历史 | `add_history_to_context=True` + `num_history_runs=2` |
+| 跨 session 准备 | 创建另一个 session，为搜索准备材料 | 不同 `session_id` |
+| 按需读取历史 | Agent 主动调用 `read_chat_history` 工具 | `read_chat_history=True` |
+| 搜索过去 session | Agent 主动搜索其他 session 的历史 | `search_session_history=True` + `num_history_sessions=3` |
+| 程序化读取 | 用 `get_chat_history()` 和 `get_last_run_output()` 读取 | `store_history_messages=True` |
+
+### 核心代码
+
+```python
+from agno.db.sqlite import SqliteDb
+from models import OpenAIModel
+
+def run_chat_history_basics_example() -> None:
+    model = OpenAIModel.from_env()
+    db = SqliteDb(
+        db_file=str(db_path),
+        session_table="lesson_51_agent_sessions",
+    )
+
+    agent = model.create_agent(
+        name="Agno Chat History Agent",
+        db=db,
+        add_history_to_context=True,      # 自动注入历史
+        num_history_runs=2,               # 注入最近 2 轮
+        read_chat_history=True,           # 让 Agent 能按需读取历史
+        search_session_history=True,      # 让 Agent 能搜索过去 session
+        num_history_sessions=3,           # 搜索最近 3 个 session
+        store_history_messages=True,      # 保存历史消息到数据库
+        instructions=["你是 Agno Chat History 示例的学习助教。"],
+    )
+
+    # 场景一：同一 session 内自动注入最近历史
+    agent.run("请记住：我喜欢用最小示例理解概念。", user_id=user_id, session_id=main_session_id)
+    agent.run("请基于我的偏好，解释 Chat History 的区别。", user_id=user_id, session_id=main_session_id)
+
+    # 场景二：创建另一个 session，为跨 session 搜索准备材料
+    agent.run("这是复习 session：我已经完成了 Database 和 Session Management。", user_id=user_id, session_id=review_session_id)
+
+    # 场景三：让 Agent 按需读取聊天历史
+    agent.run("请读取聊天历史，告诉我刚才提到的学习偏好是什么。", user_id=user_id, session_id=main_session_id)
+
+    # 场景四：让 Agent 搜索过去 session 历史
+    agent.run("请根据过去的 session 历史，判断我最近已经学过哪些 Agno 主题。", user_id=user_id, session_id=search_session_id)
+
+    # 场景五：程序化读取最后一次运行结果
+    last_run_output = agent.get_last_run_output(session_id=main_session_id)
+```
+
+### 关键接口
+
+| 接口 | 说明 |
+|------|------|
+| `add_history_to_context=True` | 自动将最近历史消息注入 Agent 上下文 |
+| `num_history_runs=2` | 控制注入的历史轮次数量 |
+| `read_chat_history=True` | 让 Agent 能主动调用工具读取当前 session 聊天历史 |
+| `search_session_history=True` | 让 Agent 能搜索其他 session 的历史记录 |
+| `num_history_sessions=3` | 控制搜索多少个过去的 session |
+| `store_history_messages=True` | 将历史消息保存到数据库，支持程序化读取 |
+| `agent.get_chat_history(session_id=..., last_n_runs=3)` | 程序化读取聊天历史 |
+| `agent.get_last_run_output(session_id=...)` | 读取最后一次运行结果 |
+
+### Chat History vs Session Management
+
+| 维度 | Session Management (48) | Chat History (51) |
+|------|------------------------|-------------------|
+| 核心能力 | 管理 session 的名字、状态、消息 | 读取和搜索聊天历史 |
+| 历史访问 | `get_session_messages()` 程序化读取 | Agent 主动调用工具读取和搜索 |
+| 跨 session | 不支持 | `search_session_history=True` 支持搜索 |
+| 自动注入 | `add_history_to_context` 被动注入 | 同样支持，加上主动查询能力 |
+
+### 运行方式
+
+```bash
+python examples/51_chat_history_basics.py
+# 数据库保存到 tmp/lesson_51_chat_history.db
+```
+
+---
+
+## 8.4 Dependency Injection ⭐⭐⭐⭐
+
+**对应示例**：`examples/52_dependency_injection_basics.py`
+
+### 学习目标
+
+- 理解 `dependencies` 参数的作用：注入运行时业务上下文
+- 掌握 `add_dependencies_to_context=True` 把依赖交给模型
+- 学会在工具函数中通过 `RunContext.dependencies` 读取同一份依赖
+- 理解 callable dependency 的动态解析机制
+- 学会在 Team 中共享 dependencies
+
+### 核心概念
+
+**Dependency Injection**：对齐官方 SDK Advanced 中的「Dependency Injection」，把运行时的业务上下文（用户画像、课程计划、配置快照等）通过 `dependencies` 参数注入到 Agent / Team 中，而不是硬编码在 instructions 或用户消息里。注入的依赖对模型可见（通过 `add_dependencies_to_context`），也能被工具函数读取（通过 `RunContext.dependencies`）。
+
+### 四个演示场景
+
+| 场景 | 说明 | 关键参数 |
+|------|------|----------|
+| Agent 上下文注入 | 把 dependencies 注入到模型上下文 | `dependencies={...}` + `add_dependencies_to_context=True` |
+| 运行时覆盖 | 在单次 `run()` 中覆盖 Agent 默认依赖 | `agent.run(..., dependencies={...})` |
+| 工具读取依赖 | 工具函数通过 `RunContext.dependencies` 读取 | `def tool(run_context: RunContext)` |
+| Team 共享依赖 | Team 整体接收 dependencies，成员共享 | `Team(dependencies={...})` |
+
+### 核心代码
+
+```python
+from datetime import datetime
+from agno.run import RunContext
+from agno.team import Team, TeamMode
+from models import OpenAIModel
+
+# callable dependency：运行前动态解析
+def load_learning_snapshot(run_context: RunContext) -> dict:
+    return {
+        "user_id": run_context.user_id or "anonymous",
+        "current_lesson": "Dependency Injection",
+        "generated_at": datetime.now().isoformat(timespec="seconds"),
+    }
+
+def build_learning_dependencies() -> dict:
+    return {
+        "learner_profile": {"name": "Agno 学员", "preference": "最小示例"},
+        "course_plan": {"current": "Dependency Injection", "next": "Hooks"},
+        "learning_snapshot": load_learning_snapshot,  # callable，运行时解析
+    }
+
+# 场景一：Agent 通过 add_dependencies_to_context 读取依赖
+agent = model.create_agent(
+    name="Dependency Context Agent",
+    dependencies=build_learning_dependencies(),
+    add_dependencies_to_context=True,  # 把依赖注入给模型
+)
+agent.run("请根据注入的学习上下文说明我当前在学什么。", ...)
+
+# 场景二：运行时覆盖 Agent 默认依赖
+agent.run(
+    "请说明这次运行实际注入了哪位学习者。",
+    dependencies={"learner_profile": {"name": "运行时学员", ...}},
+)
+
+# 场景三：工具函数通过 RunContext 读取依赖
+def inspect_injected_dependencies(run_context: RunContext) -> str:
+    dependencies = run_context.dependencies or {}
+    learner = dependencies.get("learner_profile", {})
+    return f"工具读取到: 学习者={learner.get('name', 'unknown')}"
+
+agent = model.create_agent(
+    tools=[inspect_injected_dependencies],
+    dependencies=build_learning_dependencies(),
+    add_dependencies_to_context=True,
+)
+
+# 场景四：Team 共享 dependencies
+team = Team(
+    name="Dependency Injection 学习团队",
+    mode=TeamMode.coordinate,
+    members=[concept_agent, planning_agent],
+    dependencies=build_learning_dependencies(),
+    add_dependencies_to_context=True,
+)
+```
+
+### 关键参数
+
+| 参数 | 说明 |
+|------|------|
+| `dependencies={...}` | 注入运行时业务上下文，支持 dict 嵌套 |
+| `callable dependency` | 值为函数时，运行前自动解析，适合动态生成配置 |
+| `add_dependencies_to_context=True` | 把依赖作为 additional context 交给模型 |
+| `run_context.dependencies` | 工具函数中读取同一份注入依赖 |
+| `agent.run(..., dependencies={...})` | 运行时覆盖 Agent 默认依赖 |
+
+### Dependency Injection vs 其他注入方式
+
+| 方式 | 用途 | 生命周期 |
+|------|------|----------|
+| `instructions` | 静态行为指导 | Agent 创建时固定 |
+| `session_state` | 会话状态 | 跟随 session 持久化 |
+| `dependencies` | 运行时业务上下文 | 每次 run 可覆盖 |
+| `knowledge` | 知识库检索 | Agent 创建时绑定 |
+
+### 关键观察点
+
+| 观察点 | 说明 |
+|--------|------|
+| callable dependency | 值为函数时自动解析，可以读取 `run_context.user_id` 等运行时信息 |
+| 运行时覆盖 | `run()` 的 `dependencies` 会覆盖 Agent 默认配置 |
+| 工具可见性 | `RunContext.dependencies` 让工具函数能读取同一份依赖 |
+| Team 共享 | Team 接收 dependencies 后，所有成员共享同一份上下文 |
+
+### 运行方式
+
+```bash
+python examples/52_dependency_injection_basics.py
+```
+
+---
+
 # 附录
 
 ## A. 模型层封装
@@ -4946,28 +5167,26 @@ uv pip install -U ddgs chromadb beautifulsoup4 pypdf reportlab
 | 第五阶段 | 27-41 Workflow | ✅ 已完成 |
 | 第六阶段 | 42-45 Runtime | ✅ 已完成 |
 | 第七阶段 | 46-48 SDK Introduction | ✅ 已完成 |
-| 第八阶段 | 49-50 SDK Advanced | ✅ 已完成 |
+| 第八阶段 | 49-52 SDK Advanced | ✅ 已完成 |
 
 ### 下一步学习建议
 
 完成本手册的所有课程后，建议按官方 SDK Advanced 路线继续学习：
 
-**Advanced 主线：**
+**Advanced 主线（剩余）：**
 
-1. **Chat History**：聊天历史
-2. **Dependency Injection**：依赖注入
-3. **Hooks**：钩子
-4. **Skills**：技能
-5. **Reasoning**：推理
-6. **Multimodal**：多模态
+1. **Hooks**：钩子
+2. **Skills**：技能
+3. **Reasoning**：推理
+4. **Multimodal**：多模态
 
 **Production 主线：**
 
-7. **Guardrails**：防护栏
-8. **Human in the Loop**：人工介入
-9. **Evals**：评估
-10. **Tracing**：追踪
-11. 最后回到 `study_assistant_app` 做更完整的产品化整理
+5. **Guardrails**：防护栏
+6. **Human in the Loop**：人工介入
+7. **Evals**：评估
+8. **Tracing**：追踪
+9. 最后回到 `study_assistant_app` 做更完整的产品化整理
 
 ### 参考文档
 
