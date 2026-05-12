@@ -9,11 +9,11 @@
 
 当前最新课程：
 
-- [examples/52_dependency_injection_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\52_dependency_injection_basics.py:1)
+- [examples/66_product_app_capabilities.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\66_product_app_capabilities.py:1)
 
 当前最适合的下一课：
 
-- `Hooks`
+- 为产品化入口补 smoke test / 整理学习手册
 
 当前主线已经覆盖到：
 
@@ -23,7 +23,8 @@
 - Runtime: Serve as API / Storage + Interfaces / Scheduling
 - 回到更完整的小项目升级
 - 官方 SDK Introduction: Input & Output / Database / Session Management
-- 官方 SDK Advanced: Context Management / State Management / Chat History / Dependency Injection
+- 官方 SDK Advanced: Context Management / State Management / Chat History / Dependency Injection / Hooks / Skills / Reasoning / Multimodal
+- 官方 SDK Production: Guardrails / Human in the Loop / Evals / Tracing / Context Compression / Run Cancellation / Background Execution / MCP
 
 ## 学习主线
 
@@ -103,6 +104,20 @@
 - [examples/50_state_management_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\50_state_management_basics.py:1)
 - [examples/51_chat_history_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\51_chat_history_basics.py:1)
 - [examples/52_dependency_injection_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\52_dependency_injection_basics.py:1)
+- [examples/53_hooks_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\53_hooks_basics.py:1)
+- [examples/54_skills_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\54_skills_basics.py:1)
+- [examples/55_reasoning_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\55_reasoning_basics.py:1)
+- [examples/56_multimodal_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\56_multimodal_basics.py:1)
+- [examples/57_guardrails_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\57_guardrails_basics.py:1)
+- [examples/58_human_in_the_loop_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\58_human_in_the_loop_basics.py:1)
+- [examples/59_evals_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\59_evals_basics.py:1)
+- [examples/60_tracing_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\60_tracing_basics.py:1)
+- [examples/61_official_plan_wrap_up.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\61_official_plan_wrap_up.py:1)
+- [examples/62_context_compression_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\62_context_compression_basics.py:1)
+- [examples/63_run_cancellation_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\63_run_cancellation_basics.py:1)
+- [examples/64_background_execution_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\64_background_execution_basics.py:1)
+- [examples/65_mcp_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\65_mcp_basics.py:1)
+- [examples/66_product_app_capabilities.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\66_product_app_capabilities.py:1)
 
 ## 第 48 课：Session Management
 
@@ -209,6 +224,48 @@ python examples/51_chat_history_basics.py
 python examples/52_dependency_injection_basics.py
 ```
 
+## 第 53 课：Hooks
+
+这一课对齐官方 [Hooks](https://docs.agno.com/hooks/overview)。
+
+重点学习：
+
+- `pre_hooks`：在模型运行前做输入校验、脱敏、审计或上下文准备
+- `post_hooks`：在模型运行后做输出检查、指标记录或日志采集
+- `tool_hooks`：包裹工具调用，统一记录工具入参、结果和错误
+- `InputCheckError`：让 pre hook 在模型调用前阻止不合适的输入
+- Team hooks：在 Team 层统一处理运行前后的横切逻辑
+
+运行方式：
+
+```bash
+python examples/53_hooks_basics.py
+```
+
+## 第 54-64 课：官方计划补齐与收尾
+
+这一组课程继续对齐官方 SDK Introduction 中的 Advanced / Production 主线：
+
+- [examples/54_skills_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\54_skills_basics.py:1)：`Skills / LocalSkills / SKILL.md`
+- [examples/55_reasoning_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\55_reasoning_basics.py:1)：`reasoning=True / reasoning_steps`
+- [examples/56_multimodal_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\56_multimodal_basics.py:1)：`Image / File / send_media_to_model`
+- [examples/57_guardrails_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\57_guardrails_basics.py:1)：`PIIDetectionGuardrail / InputCheckError`
+- [examples/58_human_in_the_loop_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\58_human_in_the_loop_basics.py:1)：`requires_confirmation / requires_user_input / external_execution`
+- [examples/59_evals_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\59_evals_basics.py:1)：`AccuracyEval / PerformanceEval`
+- [examples/60_tracing_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\60_tracing_basics.py:1)：`setup_tracing / DatabaseSpanExporter`
+- [examples/61_official_plan_wrap_up.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\61_official_plan_wrap_up.py:1)：课程计划收尾检查
+- [examples/62_context_compression_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\62_context_compression_basics.py:1)：`CompressionManager / compress_tool_results`
+- [examples/63_run_cancellation_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\63_run_cancellation_basics.py:1)：`cancel_run / raise_if_cancelled`
+- [examples/64_background_execution_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\64_background_execution_basics.py:1)：`background=True / arun`
+- [examples/65_mcp_basics.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\65_mcp_basics.py:1)：`MCPTools / streamable-http / stdio`
+- [examples/66_product_app_capabilities.py](C:\Users\lenovo\Desktop\AgnoStudy\examples\66_product_app_capabilities.py:1)：回到 `study_assistant_app` 整合 Skills / Guardrails / Tracing / MCP
+
+运行方式：
+
+```bash
+python examples/61_official_plan_wrap_up.py
+```
+
 ## 官方 SDK Introduction 对齐后的下一阶段计划
 
 根据官方 [SDK Introduction](https://docs.agno.com/sdk/introduction)，Agno SDK 当前更清晰地分成三层学习路径：
@@ -265,12 +322,21 @@ python examples/52_dependency_injection_basics.py
 - State Management
 - Chat History
 - Dependency Injection
+- Hooks
+- Skills
+- Reasoning
+- Multimodal
+- Guardrails
+- Human in the Loop
+- Evals
+- Tracing
+- Context Compression
+- Run Cancellation
+- Background Execution
 
 还没有按官方目录系统补齐的部分：
 
-- Hooks
-- Skills / Reasoning / Multimodal
-- Guardrails / Human in the Loop / Evals / Tracing
+- 当前 SDK Introduction 主线已经补齐，下一步回到应用产品化整理
 
 ## 接下来更合适的课程顺序
 
@@ -280,23 +346,28 @@ python examples/52_dependency_injection_basics.py
 2. ~~`State Management`~~ ✅ 已完成
 3. ~~`Chat History`~~ ✅ 已完成
 4. ~~`Dependency Injection`~~ ✅ 已完成
-5. `Hooks`
-6. `Skills`
-7. `Reasoning`
-8. `Multimodal`
-9. `Guardrails`
-10. `Human in the Loop`
-11. `Evals`
-12. `Tracing`
-13. 最后再回到 `study_assistant_app` 做更完整的产品化整理
+5. ~~`Hooks`~~ ✅ 已完成
+6. ~~`Skills`~~ ✅ 已完成
+7. ~~`Reasoning`~~ ✅ 已完成
+8. ~~`Multimodal`~~ ✅ 已完成
+9. ~~`Guardrails`~~ ✅ 已完成
+10. ~~`Human in the Loop`~~ ✅ 已完成
+11. ~~`Evals`~~ ✅ 已完成
+12. ~~`Tracing`~~ ✅ 已完成
+13. ~~`Context Compression`~~ ✅ 已完成
+14. ~~`Run Cancellation`~~ ✅ 已完成
+15. ~~`Background Execution`~~ ✅ 已完成
+16. ~~`MCP`~~ ✅ 已完成
+17. ~~`study_assistant_app` 产品化整理~~ ✅ 已完成
+18. 为产品化入口补 smoke test / 整理学习手册
 
 如果按最近三节课来排，推荐就是：
 
-1. ~~`Context Management`~~ ✅ 已完成
-2. ~~`State Management`~~ ✅ 已完成
-3. ~~`Chat History`~~ ✅ 已完成
-4. ~~`Dependency Injection`~~ ✅ 已完成
-5. `Hooks`
+1. ~~`Human in the Loop`~~ ✅ 已完成
+2. ~~`Evals`~~ ✅ 已完成
+3. ~~`Tracing`~~ ✅ 已完成
+4. ~~`Context Compression / Run Cancellation / Background Execution`~~ ✅ 已完成
+5. 回到 `study_assistant_app` 做产品化整理
 
 ## 当前版本注意事项
 
@@ -312,6 +383,18 @@ python examples/52_dependency_injection_basics.py
 - 第 50 课使用 `enable_agentic_state / add_session_state_to_context`，这些接口已确认在 `2.5.17` 可用
 - 第 51 课使用 `read_chat_history / search_session_history / get_chat_history / get_last_run_output`，这些接口已确认在 `2.5.17` 可用
 - 第 52 课使用 `dependencies / add_dependencies_to_context / RunContext.dependencies`，这些接口已确认在 `2.5.17` 可用
+- 第 53 课使用 `pre_hooks / post_hooks / tool_hooks / InputCheckError`，这些接口已确认在 `2.5.17` 可用
+- 第 54 课使用 `Skills / LocalSkills / SKILL.md`
+- 第 55 课使用 `reasoning / reasoning_min_steps / reasoning_max_steps`
+- 第 56 课使用 `Image / File / send_media_to_model`
+- 第 57 课使用 `PIIDetectionGuardrail`
+- 第 58 课使用 `requires_confirmation / requires_user_input / external_execution`
+- 第 59 课使用 `AccuracyEval / PerformanceEval`
+- 第 60 课使用 `setup_tracing`
+- 第 62 课使用 `CompressionManager / compress_tool_results`
+- 第 63 课使用 `cancel_run / raise_if_cancelled`
+- 第 64 课使用 `background=True / arun`
+- 第 65 课使用 `MCPTools / MultiMCPTools`，live demo 需要额外安装 `mcp`
 
 ## 参考文档
 
@@ -321,3 +404,15 @@ python examples/52_dependency_injection_basics.py
 - [Agno Context Management](https://docs.agno.com/context/overview)
 - [Agno Chat History](https://docs.agno.com/database/chat-history)
 - [Agno Dependency Injection](https://docs.agno.com/context/dependencies/overview)
+- [Agno Hooks](https://docs.agno.com/hooks/overview)
+- [Agno Skills](https://docs.agno.com/skills/overview)
+- [Agno Reasoning](https://docs.agno.com/reasoning/overview)
+- [Agno Multimodal](https://docs.agno.com/multimodal/overview)
+- [Agno Guardrails](https://docs.agno.com/guardrails/overview)
+- [Agno Human in the Loop](https://docs.agno.com/hitl/overview)
+- [Agno Evals](https://docs.agno.com/evals/overview)
+- [Agno Tracing](https://docs.agno.com/tracing/overview)
+- [Agno Context Compression](https://docs.agno.com/context/compression/overview)
+- [Agno Run Cancellation](https://docs.agno.com/runtime/cancellation)
+- [Agno Background Execution](https://docs.agno.com/runtime/background)
+- [Agno MCP](https://docs.agno.com/mcp)

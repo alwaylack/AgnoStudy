@@ -2,6 +2,7 @@ import os
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from models import OpenAIModel
 
@@ -17,6 +18,10 @@ class StudyAssistantProductConfig:
 
     enable_scheduler: bool = True
     enable_interfaces: bool = True
+    enable_skills: bool = True
+    enable_guardrails: bool = True
+    enable_tracing: bool = False
+    enable_mcp_docs: bool = False
     scheduler_timezone: str = "Asia/Shanghai"
 
 
@@ -45,10 +50,86 @@ def create_study_assistant_product_app(
     model_wrapper = OpenAIModel.from_env()
     knowledge = build_study_knowledge()
 
+    optional_status: dict[str, str] = {}
+    product_tools: list[Any] = []
+    product_pre_hooks: list[Any] = []
+    product_skills = None
+
+    if runtime_config.enable_skills:
+        try:
+            from agno.skills import LocalSkills, Skills
+
+            skills_path = project_root / "examples" / "skills"
+            product_skills = Skills(loaders=[LocalSkills(path=str(skills_path), validate=False)])
+            optional_status["skills"] = f"enabled ({', '.join(product_skills.get_skill_names())})"
+        except Exception as exc:
+            optional_status["skills"] = f"unavailable ({exc})"
+    else:
+        optional_status["skills"] = "disabled by config"
+
+    if runtime_config.enable_guardrails:
+        try:
+            from agno.guardrails import PIIDetectionGuardrail
+
+            product_pre_hooks.append(PIIDetectionGuardrail(mask_pii=True))
+            optional_status["guardrails"] = "enabled (PII masking)"
+        except Exception as exc:
+            optional_status["guardrails"] = f"unavailable ({exc})"
+    else:
+        optional_status["guardrails"] = "disabled by config"
+
+    if runtime_config.enable_tracing:
+        try:
+            from agno.tracing import setup_tracing
+
+            setup_tracing(db=db, batch_processing=False)
+            optional_status["tracing"] = "enabled"
+        except Exception as exc:
+            optional_status["tracing"] = f"unavailable ({exc})"
+    else:
+        optional_status["tracing"] = "disabled by config"
+
+    if runtime_config.enable_mcp_docs:
+        try:
+            from agno.tools.mcp import MCPTools
+
+            product_tools.append(
+                MCPTools(
+                    transport="streamable-http",
+                    url="https://docs.agno.com/mcp",
+                    include_tools=["search_docs", "read_page"],
+                )
+            )
+            optional_status["mcp_docs"] = "enabled (Agno docs MCP)"
+        except Exception as exc:
+            optional_status["mcp_docs"] = f"unavailable ({exc})"
+    else:
+        optional_status["mcp_docs"] = "disabled by config"
+
     research_agent = build_research_agent(model_wrapper, knowledge)
     study_team = build_study_team(model_wrapper, knowledge)
     workflow = build_study_assistant_workflow_app(model_wrapper)
     workflow_run_endpoint = f"/workflows/{workflow.id}/runs"
+
+    product_coach_agent = Agent(
+        id="study-assistant-product-coach",
+        name="学习助手产品教练",
+        model=model_wrapper.get_model(),
+        db=db,
+        knowledge=knowledge,
+        search_knowledge=True,
+        add_knowledge_to_context=True,
+        skills=product_skills,
+        tools=product_tools,
+        pre_hooks=product_pre_hooks or None,
+        instructions=[
+            "你是学习助手产品入口里的综合教练。",
+            "请结合知识库、Skills 和安全策略回答学习路线问题。",
+            "如果 MCP 文档工具可用，可以优先用它核对官方文档。",
+        ],
+        markdown=True,
+        debug_mode=True,
+    )
 
     scheduler_agent = Agent(
         id="study-assistant-product-scheduler",
@@ -116,7 +197,7 @@ def create_study_assistant_product_app(
 
     agent_os = AgentOS(
         name="study-assistant-product",
-        agents=[research_agent, scheduler_agent],
+        agents=[research_agent, product_coach_agent, scheduler_agent],
         teams=[study_team],
         workflows=[workflow],
         db=db,
@@ -134,7 +215,7 @@ def create_study_assistant_product_app(
         return {
             "status": "ok",
             "service": "study-assistant-product",
-            "components": ["agent", "team", "workflow", "runtime"],
+            "components": ["agent", "team", "workflow", "runtime", "skills", "guardrails", "tracing", "mcp"],
         }
 
     @app.get("/study-assistant/product/config")
@@ -146,6 +227,7 @@ def create_study_assistant_product_app(
             "enable_scheduler": runtime_config.enable_scheduler,
             "enable_interfaces": runtime_config.enable_interfaces,
             "interfaces": interface_status,
+            "optional_capabilities": optional_status,
             "timezone": runtime_config.scheduler_timezone,
         }
 

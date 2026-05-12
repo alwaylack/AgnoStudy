@@ -86,11 +86,29 @@
 │  ├── 47 Database                                  ⭐⭐⭐⭐       │
 │  └── 48 Session Management                        ⭐⭐⭐⭐       │
 │                                                                 │
-│  第八阶段：SDK Advanced（49-52）                  ⭐⭐⭐⭐       │
+│  第八阶段：SDK Advanced（49-56）                  ⭐⭐⭐⭐       │
 │  ├── 49 Context Management                        ⭐⭐⭐⭐       │
 │  ├── 50 State Management                          ⭐⭐⭐⭐       │
 │  ├── 51 Chat History                              ⭐⭐⭐⭐       │
-│  └── 52 Dependency Injection                      ⭐⭐⭐⭐       │
+│  ├── 52 Dependency Injection                      ⭐⭐⭐⭐       │
+│  ├── 53 Hooks                                     ⭐⭐⭐⭐       │
+│  ├── 54 Skills                                    ⭐⭐⭐⭐       │
+│  ├── 55 Reasoning                                 ⭐⭐⭐⭐       │
+│  └── 56 Multimodal                                ⭐⭐⭐⭐       │
+│                                                                 │
+│  第九阶段：SDK Production（57-65）                ⭐⭐⭐⭐⭐      │
+│  ├── 57 Guardrails                                ⭐⭐⭐⭐       │
+│  ├── 58 Human in the Loop                         ⭐⭐⭐⭐⭐      │
+│  ├── 59 Evals                                     ⭐⭐⭐⭐       │
+│  ├── 60 Tracing                                   ⭐⭐⭐⭐       │
+│  ├── 61 Official Plan Wrap-Up                     ⭐⭐⭐         │
+│  ├── 62 Context Compression                       ⭐⭐⭐⭐       │
+│  ├── 63 Run Cancellation                          ⭐⭐⭐⭐       │
+│  ├── 64 Background Execution                      ⭐⭐⭐⭐⭐      │
+│  └── 65 MCP                                       ⭐⭐⭐⭐       │
+│                                                                 │
+│  第十阶段：产品化整合（66）                          ⭐⭐⭐⭐⭐      │
+│  └── 66 Product App Capabilities                   ⭐⭐⭐⭐⭐      │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -106,7 +124,9 @@
 - [第五阶段：Workflow（27-41）](#第五阶段workflow27-41)
 - [第六阶段：Runtime（42-45）](#第六阶段runtime42-45)
 - [第七阶段：官方 SDK Introduction（46-48）](#第七阶段官方-sdk-introduction46-48)
-- [第八阶段：SDK Advanced（49-52）](#第八阶段sdk-advanced49-52)
+- [第八阶段：SDK Advanced（49-56）](#第八阶段sdk-advanced49-56)
+- [第九阶段：SDK Production（57-65）](#第九阶段sdk-production57-65)
+- [第十阶段：产品化整合（66）](#第十阶段产品化整合66)
 - [附录](#附录)
 
 ---
@@ -4603,9 +4623,9 @@ python examples/48_session_management_basics.py
 
 ---
 
-# 第八阶段：SDK Advanced（49-52）
+# 第八阶段：SDK Advanced（49-56）
 
-> 本阶段目标：对齐 Agno 官方 SDK Advanced 文档，补齐 Context Management、State Management、Chat History、Dependency Injection 等进阶能力。
+> 本阶段目标：对齐 Agno 官方 SDK Advanced 文档，补齐 Context Management、State Management、Chat History、Dependency Injection、Hooks、Skills、Reasoning、Multimodal 等进阶能力。
 
 ---
 
@@ -5058,6 +5078,850 @@ python examples/52_dependency_injection_basics.py
 
 ---
 
+## 8.5 Hooks ⭐⭐⭐⭐
+
+**对应示例**：`examples/53_hooks_basics.py`
+
+### 学习目标
+
+- 掌握 `pre_hooks` 在 Agent/Team 运行前拦截输入
+- 掌握 `post_hooks` 在运行后审计输出
+- 掌握 `tool_hooks` 包裹工具调用，记录入参和结果
+- 学会用 `InputCheckError` + `CheckTrigger` 在模型调用前拦截不合适的输入
+
+### 核心概念
+
+**Hooks**：对齐官方 SDK Advanced 中的「Hooks」，在 Agent 和 Team 的运行生命周期中插入横切逻辑。分为四类：① `pre_hooks` 运行前拦截；② `post_hooks` 运行后审计；③ `tool_hooks` 工具调用包裹；④ Team 级 `post_hooks` 团队输出审计。
+
+### 四个演示场景
+
+| 场景 | 说明 | 关键参数 |
+|------|------|----------|
+| pre_hook 输入验证 | 拦截包含敏感信息的输入 | `pre_hooks=[block_secret_input]` |
+| pre_hook 输入检查 | 用 `InputCheckError` 阻断不合规输入 | `InputCheckError(message=..., trigger=CheckTrigger.always)` |
+| post_hook 输出审计 | 记录运行后的响应元数据 | `post_hooks=[audit_post_hook]` |
+| tool_hooks 工具审计 | 记录工具调用的函数名、入参和结果 | `tool_hooks=[tool_audit_hook]` |
+| Team post_hook | 在 Team 层面审计成员输出 | `Team(post_hooks=[team_post_audit])` |
+
+### 核心代码
+
+```python
+from agno.exceptions import CheckTrigger, InputCheckError
+from agno.run import RunContext
+
+# pre_hook：拦截敏感输入
+def block_secret_input(run_context: RunContext, agent, input):
+    if "密码" in str(input):
+        raise InputCheckError(
+            message="检测到敏感信息，请不要在对话中包含密码。",
+            trigger=CheckTrigger.always,
+        )
+
+# post_hook：审计输出
+def audit_post_hook(run_context: RunContext, agent, input, response):
+    print(f"[审计] agent={agent.name} input_tokens={response.metrics.input_tokens}")
+
+# tool_hook：记录工具调用
+def tool_audit_hook(run_context: RunContext, agent, tool, tool_input, tool_output):
+    print(f"[工具审计] {tool.name} 入参={tool_input} 出参长度={len(str(tool_output))}")
+
+agent = model.create_agent(
+    pre_hooks=[block_secret_input],
+    post_hooks=[audit_post_hook],
+    tool_hooks=[tool_audit_hook],
+)
+```
+
+### 关键参数
+
+| 参数 | 说明 |
+|------|------|
+| `pre_hooks=[...]` | 运行前钩子列表，可抛 `InputCheckError` 阻断 |
+| `post_hooks=[...]` | 运行后钩子列表，接收 `(run_context, agent, input, response)` |
+| `tool_hooks=[...]` | 工具调用钩子列表，接收 `(run_context, agent, tool, tool_input, tool_output)` |
+| `InputCheckError` | 在 pre_hook 中抛出以阻断运行 |
+| `CheckTrigger.always` | 触发条件：始终检查 |
+
+### 运行方式
+
+```bash
+python examples/53_hooks_basics.py
+```
+
+---
+
+## 8.6 Skills ⭐⭐⭐⭐
+
+**对应示例**：`examples/54_skills_basics.py`、`examples/skills/agno_lesson_planner/`
+
+### 学习目标
+
+- 掌握 `Skills` 和 `LocalSkills` 加载本地 SKILL.md 文件
+- 学会用 `skills.get_system_prompt_snippet()` 获取技能摘要
+- 理解 Agent 如何通过 `get_skill_instructions` / `get_skill_reference` 按需读取技能详情
+
+### 核心概念
+
+**Skills**：对齐官方 SDK Advanced 中的「Skills」，把结构化的技能描述（SKILL.md）加载到 Agent 中，让 Agent 能按需读取技能的工作流、参考清单和风格指导。
+
+### 两个演示场景
+
+| 场景 | 说明 | 关键参数 |
+|------|------|----------|
+| 技能加载器 | 用 `LocalSkills` 从本地目录加载 SKILL.md | `LocalSkills(path=skills_dir)` |
+| Agent 使用技能 | Agent 创建时传入 `skills=` 参数 | `agent.skills = skills` |
+
+### SKILL.md 结构
+
+```markdown
+---
+name: agno_lesson_planner
+description: 根据学习进度推荐下一课
+---
+
+## 工作流
+1. 读取当前进度
+2. 对比官方路线
+3. 推荐下一课
+
+## 风格
+- 简洁、聚焦
+- 优先最小可运行示例
+```
+
+### 核心代码
+
+```python
+from agno.skills import LocalSkills, Skills
+
+skills_dir = Path(__file__).parent / "skills" / "agno_lesson_planner"
+skills = Skills(loaders=[LocalSkills(path=str(skills_dir))])
+
+# 查看加载的技能
+print(skills.get_system_prompt_snippet())
+print(skills.get_all_skills())
+
+# Agent 使用技能
+agent = model.create_agent(skills=skills)
+```
+
+### 运行方式
+
+```bash
+python examples/54_skills_basics.py
+```
+
+---
+
+## 8.7 Reasoning ⭐⭐⭐⭐
+
+**对应示例**：`examples/55_reasoning_basics.py`
+
+### 学习目标
+
+- 掌握 `reasoning=True` 打开显式推理流程
+- 理解 `reasoning_min_steps` 和 `reasoning_max_steps` 控制推理深度
+- 学会通过 `response.reasoning_content` 和 `response.reasoning_steps` 观察推理过程
+
+### 核心概念
+
+**Reasoning**：对齐官方 SDK Advanced 中的「Reasoning」，让 Agent 在回答前先进行显式的多步推理，推理过程对用户可见。
+
+### 核心代码
+
+```python
+agent = model.create_agent(
+    name="Reasoning Agent",
+    reasoning=True,                # 打开显式推理
+    reasoning_min_steps=2,         # 最少推理步数
+    reasoning_max_steps=6,         # 最多推理步数
+)
+
+response = agent.run("请分析 Agno 的 Hooks 和 Dependency Injection 的关系。")
+
+# 观察推理过程
+print(f"推理步数: {len(response.reasoning_steps)}")
+print(f"推理内容: {response.reasoning_content}")
+```
+
+### 关键参数
+
+| 参数 | 说明 |
+|------|------|
+| `reasoning=True` | 启用显式推理流程 |
+| `reasoning_min_steps` | 最少推理步数 |
+| `reasoning_max_steps` | 最多推理步数 |
+| `response.reasoning_content` | 推理过程的文本内容 |
+| `response.reasoning_steps` | 推理步骤列表 |
+
+### 运行方式
+
+```bash
+python examples/55_reasoning_basics.py
+```
+
+---
+
+## 8.8 Multimodal ⭐⭐⭐⭐
+
+**对应示例**：`examples/56_multimodal_basics.py`
+
+### 学习目标
+
+- 掌握 `Image` 和 `File` 对象的构造方式
+- 学会通过 `agent.run(images=..., files=...)` 传入多模态输入
+- 理解 `send_media_to_model=True` 如何控制媒体转发
+
+### 核心概念
+
+**Multimodal**：对齐官方 SDK Advanced 中的「Multimodal」，让 Agent 能接收图片和文件作为输入，实现多模态理解。
+
+### 两个演示场景
+
+| 场景 | 说明 | 关键参数 |
+|------|------|----------|
+| 文件输入 | 传入 Markdown 文件让 Agent 分析 | `File(filepath=..., mime_type=..., filename=...)` |
+| 图片输入 | 传入图片让 Agent 描述 | `Image(url=..., alt_text=...)` |
+
+### 核心代码
+
+```python
+from agno.media import File, Image
+
+# 文件输入
+file_obj = File(
+    filepath=str(file_path),
+    mime_type="text/markdown",
+    filename="学习笔记.md",
+)
+response = agent.run("请总结这个文件的核心内容。", files=[file_obj])
+
+# 图片输入
+image_obj = Image(url="https://example.com/diagram.png", alt_text="架构图")
+response = agent.run("请描述这张图片的内容。", images=[image_obj])
+```
+
+### 关键参数
+
+| 参数 | 说明 |
+|------|------|
+| `Image(url=..., alt_text=...)` | 图片对象，支持 URL |
+| `File(filepath=..., mime_type=..., filename=...)` | 文件对象，支持本地路径 |
+| `send_media_to_model=True` | 将媒体内容转发给底层模型 |
+| `agent.run(images=[...], files=[...])` | 运行时传入多模态输入 |
+
+### 运行方式
+
+```bash
+python examples/56_multimodal_basics.py
+```
+
+---
+
+# 第九阶段：SDK Production（57-65）
+
+> 本阶段目标：对齐 Agno 官方 SDK Production 文档，补齐 Guardrails、Human in the Loop、Evals、Tracing 等生产级能力，以及 Context Compression、Run Cancellation、Background Execution、MCP 等高级运行时特性。
+
+---
+
+## 9.1 Guardrails ⭐⭐⭐⭐
+
+**对应示例**：`examples/57_guardrails_basics.py`
+
+### 学习目标
+
+- 掌握 `PIIDetectionGuardrail` 的阻断和脱敏两种模式
+- 学会将 Guardrail 作为 `pre_hooks` 使用
+- 理解 `InputCheckError` 在 Guardrail 中的拦截作用
+
+### 核心概念
+
+**Guardrails**：对齐官方 SDK Production 中的「Guardrails」，在 Agent 运行前检测并处理敏感信息（如 PII），支持阻断（直接拒绝）和脱敏（替换为掩码）两种策略。
+
+### 两个演示场景
+
+| 场景 | 说明 | 关键参数 |
+|------|------|----------|
+| 阻断模式 | 检测到 PII 直接抛出 `InputCheckError` | `PIIDetectionGuardrail(mask_pii=False)` |
+| 脱敏模式 | 检测到 PII 自动替换为掩码 | `PIIDetectionGuardrail(mask_pii=True)` |
+
+### 核心代码
+
+```python
+from agno.guardrails import PIIDetectionGuardrail
+
+# 阻断模式
+blocking_guardrail = PIIDetectionGuardrail(mask_pii=False)
+agent_blocking = model.create_agent(
+    pre_hooks=[blocking_guardrail],
+)
+
+# 脱敏模式
+masking_guardrail = PIIDetectionGuardrail(mask_pii=True)
+agent_masking = model.create_agent(
+    pre_hooks=[masking_guardrail],
+)
+```
+
+### 关键参数
+
+| 参数 | 说明 |
+|------|------|
+| `PIIDetectionGuardrail(mask_pii=False)` | 阻断模式：检测到 PII 抛出 `InputCheckError` |
+| `PIIDetectionGuardrail(mask_pii=True)` | 脱敏模式：将 PII 替换为掩码后继续运行 |
+
+### 运行方式
+
+```bash
+python examples/57_guardrails_basics.py
+```
+
+---
+
+## 9.2 Human in the Loop ⭐⭐⭐⭐⭐
+
+**对应示例**：`examples/58_human_in_the_loop_basics.py`
+
+### 学习目标
+
+- 掌握 `requires_confirmation=True` 让工具等待用户确认
+- 掌握 `requires_user_input=True` 让工具等待用户输入特定字段
+- 掌握 `external_execution=True` 让工具在外部系统执行
+- 学会通过 `response.requirements` 读取待处理的人工介入需求
+
+### 核心概念
+
+**Human in the Loop**：对齐官方 SDK Production 中的「Human in the Loop」，让 Agent 在执行关键操作前暂停，等待人工确认、输入或外部执行。
+
+### 三个演示场景
+
+| 场景 | 说明 | 关键参数 |
+|------|------|----------|
+| 确认模式 | 发布计划前等待用户确认 | `@tool(requires_confirmation=True)` |
+| 用户输入 | 调度复习前等待用户提供时间 | `@tool(requires_user_input=True, user_input_fields=[...])` |
+| 外部执行 | 创建工单由外部系统处理 | `@tool(external_execution=True)` |
+
+### 核心代码
+
+```python
+from agno.tools.decorator import tool
+
+@tool(requires_confirmation=True)
+def publish_learning_plan(plan_title: str) -> str:
+    """发布学习计划，需要用户确认。"""
+    return f"学习计划「{plan_title}」已发布。"
+
+@tool(requires_user_input=True, user_input_fields=["preferred_date"])
+def schedule_review(topic: str, preferred_date: str) -> str:
+    """调度复习，需要用户提供日期。"""
+    return f"已安排 {topic} 复习，日期：{preferred_date}"
+
+@tool(external_execution=True)
+def create_external_ticket(title: str, description: str) -> str:
+    """创建外部工单，由外部系统处理。"""
+    return f"工单已创建：{title}"
+
+# 读取待处理需求
+response = agent.run("请帮我发布学习计划并安排复习。")
+if response.requirements:
+    for req in response.requirements:
+        print(f"需求类型: {req.type}, 工具: {req.tool_name}")
+```
+
+### 关键参数
+
+| 参数 | 说明 |
+|------|------|
+| `@tool(requires_confirmation=True)` | 工具执行前需要用户确认 |
+| `@tool(requires_user_input=True, user_input_fields=[...])` | 工具执行前需要用户提供指定字段 |
+| `@tool(external_execution=True)` | 工具由外部系统执行 |
+| `response.requirements` | 读取本次运行产生的待处理人工介入需求 |
+
+### 运行方式
+
+```bash
+python examples/58_human_in_the_loop_basics.py
+```
+
+---
+
+## 9.3 Evals ⭐⭐⭐⭐
+
+**对应示例**：`examples/59_evals_basics.py`
+
+### 学习目标
+
+- 掌握 `AccuracyEval` 评估 Agent 输出的准确性
+- 掌握 `PerformanceEval` 评估函数执行的性能
+- 学会用 `run_with_output` 执行评估并获取结果
+
+### 核心概念
+
+**Evals**：对齐官方 SDK Production 中的「Evals」，对 Agent 输出质量和函数执行性能进行量化评估。
+
+### 两个演示场景
+
+| 场景 | 说明 | 关键参数 |
+|------|------|----------|
+| 准确性评估 | 对比 Agent 输出与期望答案 | `AccuracyEval(agent=..., run_with_output(...))` |
+| 性能评估 | 测量函数多次执行的延迟 | `PerformanceEval(func=..., num_iterations=...)` |
+
+### 核心代码
+
+```python
+from agno.eval.accuracy import AccuracyEval
+from agno.eval.performance import PerformanceEval
+
+# 准确性评估
+accuracy_eval = AccuracyEval(
+    name="Agno 知识评估",
+    input="Agno 的 Knowledge 和 Memory 有什么区别？",
+    expected_output="Knowledge 用于外部文档检索，Memory 用于用户偏好记忆。",
+    agent=agent,
+)
+accuracy_eval.run_with_output(agent=agent)
+
+# 性能评估
+def measured_function():
+    return sum(range(10000))
+
+perf_eval = PerformanceEval(
+    name="函数性能评估",
+    func=measured_function,
+    num_iterations=10,
+)
+perf_eval.run()
+```
+
+### 关键参数
+
+| 参数 | 说明 |
+|------|------|
+| `AccuracyEval(name=..., input=..., expected_output=..., agent=...)` | 创建准确性评估 |
+| `eval.run_with_output(agent=...)` | 执行评估并获取评分 |
+| `PerformanceEval(name=..., func=..., num_iterations=...)` | 创建性能评估 |
+| `perf_eval.run()` | 执行性能评估 |
+
+### 运行方式
+
+```bash
+python examples/59_evals_basics.py
+```
+
+---
+
+## 9.4 Tracing ⭐⭐⭐⭐
+
+**对应示例**：`examples/60_tracing_basics.py`
+
+### 学习目标
+
+- 掌握 `setup_tracing` 配置 OpenTelemetry 追踪
+- 理解 `SqliteDb` 作为追踪后端的使用方式
+- 学会通过 `batch_processing` 控制追踪数据的写入模式
+
+### 核心概念
+
+**Tracing**：对齐官方 SDK Production 中的「Tracing」，通过 OpenTelemetry 记录 Agent 运行的完整链路（span），用于调试、监控和性能分析。
+
+### 核心代码
+
+```python
+from agno.db.sqlite import SqliteDb
+from agno.tracing import setup_tracing
+
+db = SqliteDb(db_file=str(db_path))
+
+# 配置追踪
+setup_tracing(db=db, batch_processing=False)
+
+agent = model.create_agent(
+    name="Tracing Agent",
+    db=db,
+)
+
+# 运行后可在数据库中查看追踪 span
+agent.run("请解释 Tracing 的作用。", user_id=user_id, session_id=session_id)
+```
+
+### 关键参数
+
+| 参数 | 说明 |
+|------|------|
+| `setup_tracing(db=..., batch_processing=False)` | 配置追踪，`False` 为同步写入 |
+| `batch_processing=True` | 批量异步写入追踪数据 |
+| `db` | 追踪数据存储后端 |
+
+### 运行方式
+
+```bash
+python examples/60_tracing_basics.py
+# 数据库保存到 tmp/lesson_60_tracing.db
+```
+
+---
+
+## 9.5 Official Plan Wrap-Up ⭐⭐⭐
+
+**对应示例**：`examples/61_official_plan_wrap_up.py`
+
+### 学习目标
+
+- 验证所有课程文件是否完整
+- 回顾官方 SDK 学习路径的覆盖情况
+- 明确下一阶段的产品化方向
+
+### 核心概念
+
+**Official Plan Wrap-Up**：对已完成的官方 SDK 学习路径做全面检查，确认所有课程文件存在，并给出产品化整理的下一步建议。
+
+### 运行方式
+
+```bash
+python examples/61_official_plan_wrap_up.py
+```
+
+---
+
+## 9.6 Context Compression ⭐⭐⭐⭐
+
+**对应示例**：`examples/62_context_compression_basics.py`
+
+### 学习目标
+
+- 掌握 `CompressionManager` 压缩长工具结果
+- 理解 `compress_tool_results` 和 `compress_tool_results_limit` 的控制粒度
+- 学会观察压缩前后的上下文差异
+
+### 核心概念
+
+**Context Compression**：对齐官方 SDK Production 中的「Context Compression」，当工具返回的内容过长时，自动压缩后再注入上下文，降低 token 消耗。
+
+### 核心代码
+
+```python
+from agno.compression import CompressionManager
+
+compression_manager = CompressionManager(
+    model=model.get_model(),
+    compress_tool_results=True,
+    compress_tool_results_limit=1,  # 超过 1 个工具结果时触发压缩
+)
+
+agent = model.create_agent(
+    name="Compression Agent",
+    compression_manager=compression_manager,
+    tools=[return_long_learning_notes],
+)
+```
+
+### 关键参数
+
+| 参数 | 说明 |
+|------|------|
+| `CompressionManager(model=..., compress_tool_results=True)` | 创建压缩管理器 |
+| `compress_tool_results_limit` | 触发压缩的工具结果数量阈值 |
+| `agent.compression_manager` | Agent 绑定的压缩管理器 |
+
+### 运行方式
+
+```bash
+python examples/62_context_compression_basics.py
+```
+
+---
+
+## 9.7 Run Cancellation ⭐⭐⭐⭐
+
+**对应示例**：`examples/63_run_cancellation_basics.py`
+
+### 学习目标
+
+- 掌握 `register_run` / `cancel_run` / `is_cancelled` / `raise_if_cancelled` / `cleanup_run` 的完整生命周期
+- 理解 `RunCancelledException` 的捕获方式
+- 学会在工具函数中检查取消状态
+
+### 核心概念
+
+**Run Cancellation**：对齐官方 SDK Production 中的「Run Cancellation」，支持在 Agent 运行过程中取消执行，适用于长时间运行或用户主动中断的场景。
+
+### 核心代码
+
+```python
+from agno.exceptions import RunCancelledException
+from agno.run.cancel import (
+    cancel_run, cleanup_run, is_cancelled, raise_if_cancelled, register_run,
+)
+
+run_id = register_run()       # 注册运行
+cancel_run(run_id)            # 取消运行
+is_cancelled(run_id)          # 检查是否已取消
+raise_if_cancelled(run_id)    # 如果已取消则抛出异常
+cleanup_run(run_id)           # 清理运行资源
+
+# 在工具中检查取消状态
+def long_running_tool(run_context: RunContext) -> str:
+    for step in range(100):
+        raise_if_cancelled(run_context.run_id)
+        # ... 处理逻辑
+    return "完成"
+```
+
+### 关键参数
+
+| 参数 | 说明 |
+|------|------|
+| `register_run()` | 注册一个新的运行，返回 run_id |
+| `cancel_run(run_id)` | 标记运行取消 |
+| `is_cancelled(run_id)` | 检查运行是否已取消 |
+| `raise_if_cancelled(run_id)` | 如果已取消则抛出 `RunCancelledException` |
+| `cleanup_run(run_id)` | 清理运行资源 |
+
+### 运行方式
+
+```bash
+python examples/63_run_cancellation_basics.py
+```
+
+---
+
+## 9.8 Background Execution ⭐⭐⭐⭐⭐
+
+**对应示例**：`examples/64_background_execution_basics.py`
+
+### 学习目标
+
+- 掌握 `arun(background=True)` 发起后台运行
+- 理解后台运行的响应结构（`run_id`、`status`）
+- 学会检查后台运行的状态
+
+### 核心概念
+
+**Background Execution**：对齐官方 SDK Production 中的「Background Execution」，通过异步方式在后台执行 Agent 运行，不阻塞调用方。
+
+### 核心代码
+
+```python
+import asyncio
+
+async def run_background_execution_demo():
+    agent = model.create_agent(name="Background Agent")
+
+    # 后台运行
+    response = await agent.arun(
+        "请帮我总结 Agno 的核心能力。",
+        user_id="student@example.com",
+        session_id="lesson_64_background",
+        background=True,
+        stream=False,
+    )
+
+    print(f"run_id: {response.run_id}")
+    print(f"status: {response.status}")
+
+asyncio.run(run_background_execution_basics_example())
+```
+
+### 关键参数
+
+| 参数 | 说明 |
+|------|------|
+| `agent.arun(..., background=True)` | 在后台异步执行运行 |
+| `response.run_id` | 后台运行的唯一标识 |
+| `response.status` | 运行状态（如 pending） |
+
+### 运行方式
+
+```bash
+python examples/64_background_execution_basics.py
+```
+
+---
+
+## 9.9 MCP ⭐⭐⭐⭐
+
+**对应示例**：`examples/65_mcp_basics.py`
+
+### 学习目标
+
+- 理解 MCP（Model Context Protocol）的核心概念
+- 掌握 `MCPTools` 的 streamable-http 和 stdio 两种配置方式
+- 学会用 `include_tools` / `exclude_tools` 过滤 MCP 工具
+- 理解 `connect()` / `close()` 的显式生命周期管理
+- 了解 AgentOS 中 MCPTools 生命周期由 AgentOS 接管的注意事项
+
+### 核心概念
+
+**MCP（Model Context Protocol）**：标准化协议，让外部系统把 tools / resources / prompts 暴露给 Agent。Agno 用 `MCPTools` 包装 MCP server，让 Agent 像调用普通工具一样调用 MCP 工具。
+
+### 三种传输方式
+
+| 传输方式 | 说明 | 适用场景 |
+|----------|------|----------|
+| `streamable-http` | HTTP 长连接，新服务推荐 | 远程 MCP 服务 |
+| `stdio` | 标准输入输出 | 本地 MCP 服务 |
+| `sse` | Server-Sent Events | 旧版远程服务 |
+
+### 核心代码
+
+```python
+from agno.tools.mcp import MCPTools
+
+# Streamable HTTP 配置
+mcp_tools = MCPTools(
+    transport="streamable-http",
+    url="https://docs.agno.com/mcp",
+    include_tools=["search_docs", "read_page"],  # 只加载指定工具
+)
+
+# Stdio 配置
+mcp_tools_stdio = MCPTools(
+    command="uvx mcp-server-git",
+)
+
+# 显式生命周期管理
+await mcp_tools.connect()
+try:
+    agent = model.create_agent(tools=[mcp_tools])
+    response = await agent.arun("请查询 Agno MCPTools 的文档。")
+finally:
+    await mcp_tools.close()
+```
+
+### 关键参数
+
+| 参数 | 说明 |
+|------|------|
+| `transport="streamable-http"` | 传输方式：streamable-http / stdio / sse |
+| `url="..."` | 远程 MCP 服务地址 |
+| `command="..."` | 本地 MCP 服务命令（stdio 模式） |
+| `include_tools=[...]` | 只加载指定的 MCP 工具 |
+| `exclude_tools=[...]` | 排除指定的 MCP 工具 |
+| `refresh_connection=True` | 刷新连接 |
+| `await mcp_tools.connect()` | 显式建立连接 |
+| `await mcp_tools.close()` | 显式关闭连接 |
+
+### 关键观察点
+
+| 观察点 | 说明 |
+|--------|------|
+| 协议标准化 | MCP 把外部系统的 tools / resources / prompts 标准化暴露给 Agent |
+| 工具过滤 | `include_tools` / `exclude_tools` 控制加载哪些 MCP 工具 |
+| 生命周期 | 推荐显式 `connect()` + `finally close()`，确保资源释放 |
+| AgentOS 集成 | AgentOS 中 MCPTools 生命周期由 AgentOS 接管，不要用 `reload=True` |
+| 依赖 | live demo 需要额外安装 `mcp` 包：`uv pip install mcp` |
+
+### 运行方式
+
+```bash
+python examples/65_mcp_basics.py
+# 默认只打印配置示例，不连接远程服务
+# 设置 RUN_MCP_LIVE=1 后会尝试连接 Agno 官方文档 MCP 服务
+```
+
+---
+
+# 第十阶段：产品化整合（66）
+
+> 本阶段目标：把前九个阶段学到的所有能力（Agent / Team / Workflow / Knowledge / Skills / Guardrails / Tracing / MCP）整合回 `study_assistant_app`，形成一个可通过配置开关渐进启用能力的统一产品入口。
+
+---
+
+## 10.1 Product App Capabilities ⭐⭐⭐⭐⭐
+
+**对应示例**：`examples/66_product_app_capabilities.py`
+
+### 学习目标
+
+- 理解 `StudyAssistantProductConfig` 的配置开关设计
+- 掌握 Skills / Guardrails / Tracing / MCP 作为可选能力的整合方式
+- 学会用 `create_study_assistant_product_app()` 创建统一产品入口
+- 理解产品教练 Agent（product_coach_agent）如何整合多种能力
+
+### 核心概念
+
+**Product App Capabilities**：把前九个阶段学到的所有模式整合到 `study_assistant_app/product_app.py` 中，通过 `StudyAssistantProductConfig` 的布尔开关控制每项能力的启用/禁用，实现渐进式能力集成。
+
+### 配置开关
+
+| 开关 | 默认值 | 说明 |
+|------|--------|------|
+| `enable_scheduler` | `True` | 启用调度能力 |
+| `enable_interfaces` | `True` | 启用条件接口 |
+| `enable_skills` | `True` | 启用 Skills 加载（LocalSkills） |
+| `enable_guardrails` | `True` | 启用 PII 脱敏防护栏 |
+| `enable_tracing` | `False` | 启用 OpenTelemetry 追踪 |
+| `enable_mcp_docs` | `False` | 启用 MCP 文档工具 |
+
+### 核心架构
+
+```
+StudyAssistantProductConfig
+        │
+        ├── enable_skills ──→ Skills(loaders=[LocalSkills(...)])
+        │                         │
+        │                         └── product_coach_agent.skills
+        │
+        ├── enable_guardrails ──→ PIIDetectionGuardrail(mask_pii=True)
+        │                         │
+        │                         └── product_coach_agent.pre_hooks
+        │
+        ├── enable_tracing ──→ setup_tracing(db=...)
+        │
+        ├── enable_mcp_docs ──→ MCPTools(transport="streamable-http", ...)
+        │                         │
+        │                         └── product_coach_agent.tools
+        │
+        └── AgentOS(
+              agents=[research_agent, product_coach_agent, scheduler_agent],
+              teams=[study_team],
+              workflows=[workflow],
+            )
+```
+
+### 核心代码
+
+```python
+from study_assistant_app.product_app import (
+    StudyAssistantProductConfig,
+    create_study_assistant_product_app,
+)
+
+# 按需启用能力
+config = StudyAssistantProductConfig(
+    enable_scheduler=True,
+    enable_interfaces=True,
+    enable_skills=True,
+    enable_guardrails=True,
+    enable_tracing=False,    # 按需启用
+    enable_mcp_docs=False,   # 按需启用
+)
+
+app = create_study_assistant_product_app(config)
+# 用 fastapi dev 启动
+```
+
+### 关键观察点
+
+| 观察点 | 说明 |
+|--------|------|
+| 配置开关 | 每项能力通过 `StudyAssistantProductConfig` 的布尔开关独立控制 |
+| 渐进启用 | 能力按依赖顺序加载，失败时 graceful fallback |
+| 产品教练 Agent | 整合 Skills + Guardrails + MCP 的核心 Agent |
+| AgentOS 统一入口 | Agent / Team / Workflow / Scheduler 统一暴露为 FastAPI 服务 |
+| 能力状态端点 | `/study-assistant/product/config` 暴露所有能力的启用状态 |
+
+### 运行方式
+
+```bash
+fastapi dev examples/66_product_app_capabilities.py
+# OpenAPI 文档: http://127.0.0.1:8000/docs
+# 健康检查: http://127.0.0.1:8000/study-assistant/product/health
+# 配置概览: http://127.0.0.1:8000/study-assistant/product/config
+```
+
+---
+
 # 附录
 
 ## A. 模型层封装
@@ -5167,26 +6031,15 @@ uv pip install -U ddgs chromadb beautifulsoup4 pypdf reportlab
 | 第五阶段 | 27-41 Workflow | ✅ 已完成 |
 | 第六阶段 | 42-45 Runtime | ✅ 已完成 |
 | 第七阶段 | 46-48 SDK Introduction | ✅ 已完成 |
-| 第八阶段 | 49-52 SDK Advanced | ✅ 已完成 |
+| 第八阶段 | 49-56 SDK Advanced | ✅ 已完成 |
+| 第九阶段 | 57-65 SDK Production | ✅ 已完成 |
+| 第十阶段 | 66 产品化整合 | ✅ 已完成 |
 
 ### 下一步学习建议
 
-完成本手册的所有课程后，建议按官方 SDK Advanced 路线继续学习：
-
-**Advanced 主线（剩余）：**
-
-1. **Hooks**：钩子
-2. **Skills**：技能
-3. **Reasoning**：推理
-4. **Multimodal**：多模态
-
-**Production 主线：**
-
-5. **Guardrails**：防护栏
-6. **Human in the Loop**：人工介入
-7. **Evals**：评估
-8. **Tracing**：追踪
-9. 最后回到 `study_assistant_app` 做更完整的产品化整理
+官方 SDK 主线和产品化整合已全部完成。建议：
+1. 为产品化入口补 smoke test
+2. 整理学习手册最终版
 
 ### 参考文档
 
@@ -5195,6 +6048,7 @@ uv pip install -U ddgs chromadb beautifulsoup4 pypdf reportlab
 - [Agno Conditional Workflow](https://docs.agno.com/workflows/workflow-patterns/conditional-workflow)
 - [Agno Parallel Workflow](https://docs.agno.com/workflows/workflow-patterns/parallel-workflow)
 - [Agno Loop Workflow](https://docs.agno.com/workflows/workflow-patterns/loop-workflow)
+- [Agno MCP](https://docs.agno.com/mcp)
 
 ---
 

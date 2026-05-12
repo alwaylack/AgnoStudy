@@ -2,7 +2,7 @@
 
 from .app import run_study_assistant_app
 from .long_chain_workflow_app import run_study_assistant_long_chain_workflow_app
-from .product_app import create_study_assistant_product_app
+from .product_app import StudyAssistantProductConfig, create_study_assistant_product_app
 from .runtime_api_app import create_study_assistant_runtime_app
 from .runtime_scheduling_app import create_study_assistant_runtime_scheduling_app
 from .runtime_storage_interfaces_app import create_study_assistant_runtime_storage_interfaces_app
@@ -10,6 +10,7 @@ from .workflow_app import run_study_assistant_workflow_app
 
 __all__ = [
     "create_study_assistant_product_app",
+    "StudyAssistantProductConfig",
     "create_study_assistant_runtime_app",
     "create_study_assistant_runtime_scheduling_app",
     "create_study_assistant_runtime_storage_interfaces_app",
